@@ -1,0 +1,12 @@
+{
+  "name": "다독다독",
+  "short_name": "다독다독",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

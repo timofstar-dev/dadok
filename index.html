@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>다독다독 세계여행</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <style>
+    body { background-color: #f0f9ff; padding: 15px; font-family: 'Apple SD Gothic Neo', sans-serif; }
+    .tab-content { display: none; padding: 20px; background: white; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .is-active-content { display: block; }
+    .box-title { border-bottom: 2px solid #0284c7; padding-bottom: 5px; margin-bottom: 15px; font-weight: bold; color: #0369a1; }
+    .label { font-size: 0.95rem; color: #334155; }
+    
+    .map-container-wrapper { position: relative; margin-bottom: 20px; }
+    .map-viewport { 
+      width: 100%; aspect-ratio: 16 / 9; max-height: 650px;
+      background-color: #0ea5e9; border-radius: 20px; border: 4px solid #bae6fd; 
+      overflow: auto; 
+    }
+    
+    .zoom-controls { position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+
+    .map-zoom-wrapper { 
+      width: 100%; min-width: 800px; 
+      aspect-ratio: 1000 / 650; position: relative; 
+      transform-origin: top left; transition: width 0.3s ease; z-index: 1; margin: 0 auto;
+    }
+    
+    .map-zoom-wrapper::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('./ocean.png'); background-size: cover; background-position: center;
+      opacity: 0.6; pointer-events: none; z-index: 0; border-radius: 15px;
+    }
+
+    .world-map { width: 100%; height: 100%; display: block; position: relative; z-index: 2; }
+    
+    .world-map image { 
+      width: 100px; height: 100px; transform: translate(-50px, -50px); 
+      mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); 
+    }
+    .continent-label { font-size: 16px; font-weight: 900; fill: #ffffff; pointer-events: none; text-shadow: 2px 2px 5px rgba(0,0,0,0.8), -1px -1px 3px rgba(0,0,0,0.6); }
+    
+    .student-marker { position: absolute; transform: translate(-50%, -50%); transition: all 1s ease; pointer-events: none; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+    .marker-dot { width: 16px; height: 16px; background: #ff3860; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.6); }
+    .marker-name { background: rgba(255, 255, 255, 0.95); color: #000; font-size: 12px; padding: 3px 8px; border-radius: 6px; margin-top: 4px; white-space: nowrap; border: 1px solid #aaa; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    
+    .zoom-out .marker-dot { width: 12px; height: 12px; }
+    .zoom-out .marker-name { font-size: 10px; transform: scale(0.9); }
+
+    .table-container { overflow-x: auto; border-radius: 8px; }
+    .custom-table th { background-color: #0369a1 !important; color: white !important; text-align: center !important; white-space: nowrap; }
+    
+    /* 💡 수정된 부분: 모든 표 안의 글자들이 절대 줄바꿈되지 않도록 강제 설정 */
+    .custom-table td { vertical-align: middle; text-align: center; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="container is-max-desktop">
+    <div class="tabs is-boxed is-centered mb-0 is-toggle">
+      <ul>
+        <li id="tab-form" class="is-active" onclick="openTab(event, 'form-tab')"><a>📝 기록하기</a></li>
+        <li id="tab-leaderboard" onclick="openTab(event, 'leaderboard-tab')"><a>🏆 리더보드</a></li>
+        <li id="tab-dashboard" onclick="openTab(event, 'dashboard-tab')"><a>🏫 대시보드</a></li>
+      </ul>
+    </div>
+
+    <!-- 탭 1: 기록하기 -->
+    <div id="form-tab" class="tab-content is-active-content">
+      <h2 class="title is-4 has-text-centered mb-5" style="color: #0369a1;">🗺️ 다독다독 세계여행 비행 기록</h2>
+      <form id="readingForm">
+        <div class="columns is-multiline">
+          <div class="column is-12"><label class="label">책 읽은 날짜</label><input class="input" type="date" name="recordDate" id="recordDateInput" required></div>
+          <div class="column is-6"><label class="label">학년</label><div class="select is-fullwidth"><select name="grade" id="gradeSelect" onchange="updateClassList()" required><option value="">학년 선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option><option value="7">7학년</option><option value="8">8학년</option><option value="9">9학년</option><option value="10">10학년</option><option value="11">11학년</option><option value="12">12학년</option></select></div></div>
+          <div class="column is-6"><label class="label">나의 반</label><div class="select is-fullwidth"><select name="className" id="classSelect" onchange="updateStudentList()" required disabled><option value="">반 선택</option></select></div></div>
+          <div class="column is-12"><label class="label">탐험가 이름</label><div class="select is-fullwidth"><select name="studentName" id="studentSelect" required disabled><option value="">이름을 선택하세요</option></select></div></div>
+          <div class="column is-12"><label class="label">읽은 책 제목 <span class="has-text-grey is-size-7 ml-2">(예: 어린왕자(생텍쥐페리))</span></label><input class="input" type="text" name="bookTitle" placeholder="예: 어린왕자(생텍쥐페리)" required></div>
+          <div class="column is-6"><label class="label">읽은 페이지 수</label><input class="input" type="number" name="pages" placeholder="예: 50" required></div>
+          <div class="column is-6">
+            <label class="label">독서노트 점수</label>
+            <div class="select is-fullwidth">
+              <select name="reviewNote" required>
+                <option value="2점">기본 (2점)</option><option value="3점">좋음 (3점)</option><option value="5점">매우 좋음 (5점)</option><option value="7점">우수 (7점)</option><option value="10점">이달의 책 탐험 성공 (10점)</option><option value="0점">기록 없음 (0점)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button type="submit" id="submitBtn" class="button is-link is-fullwidth is-large mt-4" style="background-color: #0284c7;">비행 기록 저장 🛫</button>
+      </form>
+    </div>
+    
+    <!-- 탭 2: 리더보드 -->
+    <div id="leaderboard-tab" class="tab-content">
+      <div class="columns is-multiline">
+        <div class="column is-6"><div class="box"><h3 class="box-title">🌍 전체 리더보드 Top 3</h3><div id="allTop3"></div></div></div>
+        <div class="column is-6"><div class="box"><h3 class="box-title">🏫 반별 리더보드</h3><div class="select is-small mb-3"><select id="classFilter" onchange="renderAllTimeLeaderboard()"><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div><div id="classTop3"></div></div></div>
+      </div>
+      
+      <div class="field box mt-4 mb-5" style="background-color: #f0f8ff; border: 1px solid #cce5ff;">
+        <label class="label has-text-info-dark">📅 조회할 월을 선택하세요</label>
+        <div class="select is-fullwidth is-info"><select id="monthFilter" onchange="renderMonthlyLeaderboard()"></select></div>
+      </div>
+      <div class="columns is-multiline">
+        <div class="column is-6"><div class="box"><h3 class="box-title">🚀 이달의 탐험가 Top 3</h3><div id="monthTop3"></div></div></div>
+        <div class="column is-6"><div class="box"><h3 class="box-title">📖 이달의 책 탐험가</h3><div id="bookExplorers" class="tags"></div></div></div>
+      </div>
+      
+      <div class="box mt-4">
+        <h3 class="box-title">📊 이달의 반별 걸음수 현황</h3>
+        <div id="monthlyClassSteps" class="columns is-multiline"></div>
+      </div>
+    </div>
+
+    <!-- 탭 3: 대시보드 -->
+    <div id="dashboard-tab" class="tab-content">
+      <div id="errorBox" class="notification is-danger is-light" style="display:none;"></div>
+      
+      <div class="map-container-wrapper">
+        <div class="zoom-controls">
+          <button class="button is-small is-info is-light has-text-weight-bold" onclick="changeZoom(0.2)">➕ 확대</button>
+          <button class="button is-small is-info is-light has-text-weight-bold" onclick="changeZoom(-0.2)">➖ 축소</button>
+          <button class="button is-small is-info is-light has-text-weight-bold" onclick="resetZoom()">🔄 원래대로</button>
+        </div>
+        
+        <div class="map-viewport">
+          <div id="mapZoomWrapper" class="map-zoom-wrapper">
+            <svg class="world-map" viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
+              <path d="M 850 200 L 600 120 L 150 120 L 250 400 L 550 420 L 900 500 L 500 540" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="4" stroke-dasharray="12,8" />
+              <image href="./images/asia.png" x="850" y="200" /><text x="850" y="265" class="continent-label" text-anchor="middle">아시아</text>
+              <image href="./images/europe.png" x="600" y="120" /><text x="600" y="185" class="continent-label" text-anchor="middle">유럽</text>
+              <image href="./images/north_america.png" x="150" y="120" /><text x="150" y="185" class="continent-label" text-anchor="middle">북아메리카</text>
+              <image href="./images/south_america.png" x="250" y="400" /><text x="250" y="465" class="continent-label" text-anchor="middle">남아메리카</text>
+              <image href="./images/africa.png" x="550" y="420" /><text x="550" y="485" class="continent-label" text-anchor="middle">아프리카</text>
+              <image href="./images/oceania.png" x="900" y="500" /><text x="900" y="565" class="continent-label" text-anchor="middle">오세아니아</text>
+              <image href="./images/antarctica.png" x="500" y="540" /><text x="500" y="605" class="continent-label" text-anchor="middle">남극</text>
+            </svg>
+            <div id="markerLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field"><div class="select is-fullwidth is-link"><select id="dashClassSelect" onchange="renderClassTable()"><option value="">조회할 그룹을 선택하세요</option><option value="전체">🌍 전교생 전체 보기</option><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div></div>
+      <div id="classTableContainer" class="table-container mt-4" style="display:none;"><table class="table is-fullwidth is-striped custom-table"><thead><tr><th>반</th><th>번호</th><th>탐험가 이름</th><th>누적 걸음</th><th>위치</th><th>최근 읽은 책</th><th>비행일</th><th>관리</th></tr></thead><tbody id="classTableBody"></tbody></table></div>
+      
+      <div id="dashProfile" style="display:none; margin-top:20px;">
+        <button class="button is-small is-light mb-4 is-outlined" onclick="backToClassTable()">⬅ 목록으로 돌아가기</button>
+        <div class="notification is-info is-light"><p class="is-size-4 has-text-weight-bold" id="dName"></p><p id="dInfo"></p><p class="is-size-5 mt-2">총 누적 걸음: <strong id="dSteps"></strong> | 현재 위치: <strong id="dLoc"></strong></p><p class="mt-2">최근 읽은 책: <strong id="dRecentBook"></strong> (<span id="dRecentDate"></span>)</p></div>
+        <div class="level mt-5 mb-2"><div class="level-left"><h4 class="title is-5">📚 개인 읽은 책 목록</h4></div><div class="level-right"><button class="button is-small is-info is-outlined" onclick="copyIndividualBookList()">📋 목록 복사하기</button></div></div>
+        <table class="table is-fullwidth is-striped custom-table"><thead><tr><th>날짜</th><th>제목</th><th>쪽수</th><th>걸음</th></tr></thead><tbody id="dBookList"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal">
+    <div class="modal-background" onclick="closeSuccessModal()"></div>
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="box has-text-centered" style="border-radius: 20px; padding: 40px 20px;">
+        <p style="font-size: 4rem; margin-bottom: 10px;">🎉</p>
+        <p class="title is-4 mb-4" style="color: #333;">기록완료!</p>
+        <p class="is-size-5 mb-5"><strong id="acquiredSteps" style="color: #3b82f6; font-size: 1.8rem; margin-right: 4px;">0</strong>걸음을 획득하였습니다.</p>
+        <button class="button is-info is-medium px-6" onclick="closeSuccessModal()" style="border-radius: 8px;">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🚨 [필수] API_URL을 선생님의 구글 웹앱 주소로 반드시 변경하세요!
+    const API_URL = "https://script.google.com/macros/s/AKfycby6p6rz82mRayL_v6uUquzeeT31WZSSKKbsKGF07r9eFQe7ocrl-3gtNG7oMeWZA0xU/exec";
+    
+    let studentDB = {}; let globalData = []; let allRequiredBooks = {};
+    
+    const MAP_COORDS = { "아시아": {x: 85, y: 30.7}, "유럽": {x: 60, y: 18.4}, "북아메리카": {x: 15, y: 18.4}, "남아메리카": {x: 25, y: 61.5}, "아프리카": {x: 55, y: 64.6}, "오세아니아": {x: 90, y: 76.9}, "남극": {x: 50, y: 83.0} };
+    const LOCATIONS = [ {min:3000, e:"🐧", n:"남극"}, {min:2300, e:"🐨", n:"오세아니아"}, {min:1800, e:"🦁", n:"아프리카"}, {min:1600, e:"🦜", n:"남아메리카"}, {min:900, e:"🗽", n:"북아메리카"}, {min:700, e:"🏰", n:"유럽"}, {min:0, e:"⛩️", n:"아시아"} ];
+    const classMap = { "1":["오세아니아반"], "2":["오세아니아반"], "3":["아시아반"], "4":["아시아반"], "5":["아프리카반"], "6":["아프리카반"], "7":["유럽반"], "8":["유럽반"], "9":["아메리카반"], "10":["아메리카반"], "11":["아틀랜틱반"], "12":["아틀랜틱반"] };
+
+    let currentZoom = 100;
+    function changeZoom(d) { currentZoom = Math.min(300, Math.max(100, currentZoom + (d * 100))); document.getElementById('mapZoomWrapper').style.width = currentZoom + '%'; }
+    function resetZoom() { currentZoom = 100; document.getElementById('mapZoomWrapper').style.width = '100%'; }
+
+    function setTodayDate() {
+      const today = new Date(); const offset = today.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
+      const dateInput = document.getElementById('recordDateInput');
+      if(dateInput) dateInput.value = localISOTime;
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.remove('is-active');
+    }
+
+    window.onload = async () => { 
+      setTodayDate(); 
+      try { 
+        document.getElementById('errorBox').style.display = 'none';
+        studentDB = await fetch(API_URL + "?action=getStudentDB").then(r => r.json()); 
+        await loadGlobalData();
+      } catch(e) { 
+        document.getElementById('errorBox').style.display = 'block';
+        document.getElementById('errorBox').innerText = "데이터 연결 오류! API URL이 정확한지 확인해주세요.";
+      } 
+    };
+
+    async function loadGlobalData() {
+      const res = await fetch(API_URL + "?action=getFullData").then(r => r.json());
+      globalData = res.logs || []; 
+      allRequiredBooks = res.allRequiredBooks || {};
+      
+      const mSelect = document.getElementById('monthFilter');
+      if(mSelect && mSelect.options.length === 0 && res.months) { 
+        res.months.forEach(m => { const opt = new Option(m, m); if(m === res.currentMonth) opt.selected = true; mSelect.add(opt); }); 
+      }
+      
+      renderAllTimeLeaderboard(); 
+      if(document.getElementById('monthFilter')) renderMonthlyLeaderboard();
+      if(document.getElementById('dashClassSelect').value) renderClassTable();
+    }
+
+    document.getElementById('readingForm').onsubmit = async function(e) {
+      e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.classList.add('is-loading');
+      const data = { date: this.recordDate.value, grade: this.grade.value, className: this.className.value, studentName: this.studentName.value, bookTitle: this.bookTitle.value, pages: this.pages.value, reviewNote: this.reviewNote.value };
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(r => r.json());
+        btn.classList.remove('is-loading'); this.bookTitle.value = ""; this.pages.value = ""; setTodayDate();
+        
+        document.getElementById('acquiredSteps').innerText = res.steps;
+        document.getElementById('successModal').classList.add('is-active');
+        
+        await loadGlobalData();
+      } catch(e) { alert("저장 중 오류 발생"); btn.classList.remove('is-loading'); }
+    };
+
+    function renderClassTable() {
+      const cls = document.getElementById('dashClassSelect').value; const layer = document.getElementById('markerLayer'); const tbody = document.getElementById('classTableBody'); const container = document.getElementById('classTableContainer'); document.getElementById('dashProfile').style.display = 'none';
+      layer.innerHTML = ''; if(!cls) { container.style.display='none'; return; }
+      if(cls === "전체") layer.classList.add("zoom-out"); else layer.classList.remove("zoom-out");
+      
+      let students = []; 
+      if(studentDB && typeof studentDB === 'object') {
+        for(let g in studentDB) for(let c in studentDB[g]) if(cls === "전체" || cls === c) if(Array.isArray(studentDB[g][c])) studentDB[g][c].forEach(n => students.push({n: n, c: c}));
+      }
+      students.sort((a,b) => a.n.localeCompare(b.n));
+
+      if (students.length === 0) { tbody.innerHTML = '<tr><td colspan="8">데이터가 없습니다.</td></tr>'; container.style.display = 'block'; return; }
+
+      let html = '';
+      students.forEach((s, index) => {
+        const logs = globalData.filter(r => r[2] === s.c && r[3] === s.n).sort((a,b) => new Date(b[0]) - new Date(a[0])); 
+        const steps = logs.reduce((sum, r) => sum + r[7], 0); const loc = LOCATIONS.find(l => steps >= l.min) || LOCATIONS[6];
+        
+        if(MAP_COORDS[loc.n]) {
+          const coord = MAP_COORDS[loc.n]; const marker = document.createElement('div'); marker.className = 'student-marker';
+          const spread = cls === '전체' ? 6 : 3; marker.style.left = (coord.x + (Math.random()-0.5)*spread) + '%'; marker.style.top = (coord.y + (Math.random()-0.5)*spread) + '%';
+          marker.innerHTML = `<div class="marker-dot"></div><div class="marker-name">${s.n}</div>`; layer.appendChild(marker);
+        }
+        
+        const recentBook = logs.length > 0 ? logs[0][4] : '-'; const recentDate = logs.length > 0 ? new Date(logs[0][0]).toLocaleDateString() : '-';
+        html += `<tr><td>${s.c}</td><td>${index+1}</td><td><a onclick="showStudentProfile('${s.n}')" class="has-text-weight-bold has-text-link">${s.n}</a></td><td>${steps}</td><td>${loc.e} ${loc.n}</td><td>${recentBook}</td><td>${recentDate}</td><td><button class="button is-small is-outlined is-info" onclick="copySingleStudentList('${s.n}')">복사</button></td></tr>`;
+      });
+      tbody.innerHTML = html; container.style.display='block';
+    }
+
+    function showStudentProfile(name) { 
+      document.getElementById('classTableContainer').style.display = 'none'; const view = document.getElementById('dashProfile'); view.setAttribute('data-current-student', name); 
+      const myLogs = globalData.filter(r => r[3] === name).sort((a,b) => new Date(b[0]) - new Date(a[0])); 
+      const totalSteps = myLogs.reduce((sum, r) => sum + r[7], 0); const loc = LOCATIONS.find(l => totalSteps >= l.min) || LOCATIONS[6]; const recent = myLogs[0]; 
+      
+      document.getElementById('dName').innerText = `👋 ${name} 탐험가님`; document.getElementById('dInfo').innerText = recent ? `${recent[1]} | ${recent[2]}` : ''; document.getElementById('dSteps').innerText = totalSteps; document.getElementById('dLoc').innerText = `${loc.e} ${loc.n}`; document.getElementById('dRecentBook').innerText = recent ? recent[4] : '-'; document.getElementById('dRecentDate').innerText = recent ? new Date(recent[0]).toLocaleDateString() : '-'; document.getElementById('dBookList').innerHTML = myLogs.map(r => `<tr><td>${new Date(r[0]).toLocaleDateString()}</td><td>${r[4]}</td><td>${r[5]}p</td><td>+${r[7]}</td></tr>`).join(''); view.style.display = 'block'; 
+    }
+
+    function backToClassTable() { document.getElementById('dashProfile').style.display = 'none'; document.getElementById('classTableContainer').style.display = 'block'; }
+    function copySingleStudentList(name) { const myLogs = globalData.filter(r => r[3] === name).sort((a,b) => new Date(b[0]) - new Date(a[0])); const textToCopy = myLogs.map(r => { const d = new Date(r[0]); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}_${r[4]}`; }).join('\n'); if(textToCopy) { navigator.clipboard.writeText(textToCopy); alert('복사되었습니다!'); } }
+
+    function updateClassList() { const g = document.getElementById('gradeSelect').value; const c = document.getElementById('classSelect'); c.innerHTML = '<option value="">반 선택</option>'; if(g && classMap[g]) { classMap[g].forEach(cls => c.innerHTML += `<option value="${cls}">${cls}</option>`); c.disabled = false; if(classMap[g].length===1) { c.selectedIndex=1; updateStudentList(); } } }
+    function updateStudentList() { const g = document.getElementById('gradeSelect').value, c = document.getElementById('classSelect').value, s = document.getElementById('studentSelect'); s.innerHTML = '<option value="">이름 선택</option>'; if(studentDB[g] && studentDB[g][c]) { studentDB[g][c].forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); s.disabled = false; } }
+    function openTab(e, t) { document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("is-active-content")); document.querySelectorAll(".tabs li").forEach(el => el.classList.remove("is-active")); document.getElementById(t).classList.add("is-active-content"); e.currentTarget.classList.add("is-active"); if(t === 'dashboard-tab') renderClassTable(); }
+    
+    function renderAllTimeLeaderboard() { 
+      if(!globalData || !globalData.length) return; 
+      const calcRank = list => { const stats = {}; list.forEach(r => stats[r[3]] = (stats[r[3]]||0)+r[7]); return Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,3); }; 
+      const htmlRank = list => list.map((u,i) => `<p><b>${i+1}위</b> ${u[0]} (${u[1]}걸음)</p>`).join('')||"기록 없음"; 
+      document.getElementById('allTop3').innerHTML = htmlRank(calcRank(globalData)); 
+      document.getElementById('classTop3').innerHTML = htmlRank(calcRank(globalData.filter(r => r[2] === document.getElementById('classFilter').value))); 
+    }
+
+    function renderMonthlyLeaderboard() { 
+      if(!globalData || !globalData.length) return; 
+      const monthStr = document.getElementById('monthFilter').value;
+      const mNum = parseInt(monthStr)-1; 
+      const monthLogs = globalData.filter(r => new Date(r[0]).getMonth() === mNum); 
+      const calcRank = list => { const stats = {}; list.forEach(r => stats[r[3]] = (stats[r[3]]||0)+r[7]); return Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,3); }; 
+      document.getElementById('monthTop3').innerHTML = (list => list.map((u,i) => `<p><b>${i+1}위</b> ${u[0]} (${u[1]}걸음)</p>`).join('')||"기록 없음")(calcRank(monthLogs)); 
+      
+      const bookReaders = new Set(), monthlyBooks = allRequiredBooks[monthStr]||{}; 
+      monthLogs.forEach(r => { 
+        const tgt = monthlyBooks[r[2]]; 
+        if(tgt) { 
+          const sBook = r[4].replace(/\s/g, ''); 
+          if(tgt.split(',').some(b => { let cln = b.replace(/\(.*\)/,'').trim().replace(/\s/g,''); return cln.length>=2 && sBook.includes(cln); })) bookReaders.add(r[3]); 
+        } 
+      }); 
+      document.getElementById('bookExplorers').innerHTML = [...bookReaders].map(n => `<span class="tag is-success is-light is-medium mr-1 mb-1">${n}</span>`).join('')||"없음"; 
+      
+      const classSteps = {};
+      monthLogs.forEach(r => {
+        const c = r[2], n = r[3], s = r[7];
+        if(!classSteps[c]) classSteps[c] = {};
+        classSteps[c][n] = (classSteps[c][n]||0) + s;
+      });
+      
+      const classNames = ["오세아니아반", "아시아반", "아프리카반", "아메리카반", "유럽반", "아틀랜틱반"];
+      let stepsHtml = '';
+      
+      classNames.forEach(c => {
+        let studentsInClass = [];
+        if(studentDB && typeof studentDB === 'object') {
+          for(let g in studentDB) {
+            if(studentDB[g][c] && Array.isArray(studentDB[g][c])) {
+              studentDB[g][c].forEach(n => { if(!studentsInClass.includes(n)) studentsInClass.push(n); });
+            }
+          }
+        }
+        if(studentsInClass.length === 0 && classSteps[c]) studentsInClass = Object.keys(classSteps[c]);
+        
+        if (studentsInClass.length > 0) {
+          const studentSteps = studentsInClass.map(n => ({ name: n, steps: (classSteps[c] && classSteps[c][n]) || 0 }));
+          studentSteps.sort((a,b) => b.steps !== a.steps ? b.steps - a.steps : a.name.localeCompare(b.name));
+          
+          const listHtml = studentSteps.map(s => s.steps >= 100 ? `<div class="mb-1"><strong>${s.name}(${s.steps}걸음)</strong></div>` : `<div class="mb-1">${s.name}(${s.steps}걸음)</div>`).join('');
+          stepsHtml += `<div class="column is-4"><div class="box p-3 has-background-white-bis" style="border: 1px solid #e2e8f0; border-radius: 8px;"><h4 class="title is-6 has-text-info mb-2 pb-1" style="border-bottom: 2px solid #bae6fd;">${c}</h4>${listHtml}</div></div>`;
+        }
+      });
+      document.getElementById('monthlyClassSteps').innerHTML = stepsHtml || "<p class='ml-3'>기록 없음</p>";
+    }
+  </script>
+</body>
+</html> 
