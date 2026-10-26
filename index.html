@@ -12,48 +12,13 @@
     .box-title { border-bottom: 2px solid #0284c7; padding-bottom: 5px; margin-bottom: 15px; font-weight: bold; color: #0369a1; }
     .label { font-size: 0.95rem; color: #334155; }
     
-    .map-container-wrapper { position: relative; margin-bottom: 20px; }
-    .map-viewport { 
-      width: 100%; aspect-ratio: 16 / 9; max-height: 650px;
-      background-color: #0ea5e9; border-radius: 20px; border: 4px solid #bae6fd; 
-      overflow: auto; 
-    }
-    
-    .zoom-controls { position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
-
-    .map-zoom-wrapper { 
-      width: 100%; min-width: 800px; 
-      aspect-ratio: 1000 / 650; position: relative; 
-      transform-origin: top left; transition: width 0.3s ease; z-index: 1; margin: 0 auto;
-    }
-    
-    .map-zoom-wrapper::before {
-      content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background-image: url('./ocean.png'); background-size: cover; background-position: center;
-      opacity: 0.6; pointer-events: none; z-index: 0; border-radius: 15px;
-    }
-
-    .world-map { width: 100%; height: 100%; display: block; position: relative; z-index: 2; }
-    
-    .world-map image { 
-      width: 100px; height: 100px; transform: translate(-50px, -50px); 
-      mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); 
-    }
-    .continent-label { font-size: 16px; font-weight: 900; fill: #ffffff; pointer-events: none; text-shadow: 2px 2px 5px rgba(0,0,0,0.8), -1px -1px 3px rgba(0,0,0,0.6); }
-    
-    .student-marker { position: absolute; transform: translate(-50%, -50%); transition: all 1s ease; pointer-events: none; z-index: 10; display: flex; flex-direction: column; align-items: center; }
-    .marker-dot { width: 16px; height: 16px; background: #ff3860; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.6); }
-    .marker-name { background: rgba(255, 255, 255, 0.95); color: #000; font-size: 12px; padding: 3px 8px; border-radius: 6px; margin-top: 4px; white-space: nowrap; border: 1px solid #aaa; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    
-    .zoom-out .marker-dot { width: 12px; height: 12px; }
-    .zoom-out .marker-name { font-size: 10px; transform: scale(0.9); }
-
     .table-container { overflow-x: auto; border-radius: 8px; }
     .custom-table th { background-color: #0369a1 !important; color: white !important; text-align: center !important; white-space: nowrap; }
     
     /* 💡 수정된 부분: 모든 표 안의 글자들이 절대 줄바꿈되지 않도록 강제 설정 */
     .custom-table td { vertical-align: middle; text-align: center; white-space: nowrap; }
   </style>
+  <link rel="stylesheet" href="journey.css">
 </head>
 <body>
   <div class="container is-max-desktop">
@@ -115,31 +80,30 @@
     <div id="dashboard-tab" class="tab-content">
       <div id="errorBox" class="notification is-danger is-light" style="display:none;"></div>
       
-      <div class="map-container-wrapper">
-        <div class="zoom-controls">
-          <button class="button is-small is-info is-light has-text-weight-bold" onclick="changeZoom(0.2)">➕ 확대</button>
-          <button class="button is-small is-info is-light has-text-weight-bold" onclick="changeZoom(-0.2)">➖ 축소</button>
-          <button class="button is-small is-info is-light has-text-weight-bold" onclick="resetZoom()">🔄 원래대로</button>
-        </div>
-        
-        <div class="map-viewport">
-          <div id="mapZoomWrapper" class="map-zoom-wrapper">
-            <svg class="world-map" viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
-              <path d="M 850 200 L 600 120 L 150 120 L 250 400 L 550 420 L 900 500 L 500 540" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="4" stroke-dasharray="12,8" />
-              <image href="./images/asia.png" x="850" y="200" /><text x="850" y="265" class="continent-label" text-anchor="middle">아시아</text>
-              <image href="./images/europe.png" x="600" y="120" /><text x="600" y="185" class="continent-label" text-anchor="middle">유럽</text>
-              <image href="./images/north_america.png" x="150" y="120" /><text x="150" y="185" class="continent-label" text-anchor="middle">북아메리카</text>
-              <image href="./images/south_america.png" x="250" y="400" /><text x="250" y="465" class="continent-label" text-anchor="middle">남아메리카</text>
-              <image href="./images/africa.png" x="550" y="420" /><text x="550" y="485" class="continent-label" text-anchor="middle">아프리카</text>
-              <image href="./images/oceania.png" x="900" y="500" /><text x="900" y="565" class="continent-label" text-anchor="middle">오세아니아</text>
-              <image href="./images/antarctica.png" x="500" y="540" /><text x="500" y="605" class="continent-label" text-anchor="middle">남극</text>
-            </svg>
-            <div id="markerLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="field"><div class="select is-fullwidth is-link"><select id="dashClassSelect" onchange="renderClassTable()"><option value="">조회할 그룹을 선택하세요</option><option value="전체">🌍 전교생 전체 보기</option><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div></div>
+      <header class="journey-header">
+        <div><p class="journey-eyebrow">DADOK EXPLORERS CLUB</p><h2>책 따라, 세계 한 바퀴 <span aria-hidden="true">✈</span></h2><p>한 장 한 장 읽을 때마다, 친구들과 더 넓은 세상으로!</p></div>
+        <div class="journey-emblem" aria-hidden="true"><span>🌏</span><b>우리들의 독서 탐험대</b><small>READ · WALK · DISCOVER</small></div>
+      </header>
+      <section class="expedition-bar" aria-label="탐험대 선택">
+        <div class="expedition-select"><label for="dashClassSelect">누구와 함께 떠날까요?</label><select id="dashClassSelect" onchange="renderClassTable()"><option value="전체">🌍 전교생 전체 보기</option><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div>
+        <div class="expedition-stat"><strong id="expeditionCount">—</strong><span>함께하는 탐험가</span></div>
+        <div class="expedition-stat"><strong id="expeditionFinished">—</strong><span>세계 일주 완료</span></div>
+        <div class="expedition-note"><span aria-hidden="true">🧭</span><p>우리 모두의 속도로,<br><b>함께 떠나는 여행</b></p></div>
+      </section>
+      <section class="map-container-wrapper journey-map" aria-label="친구들의 세계여행 지도">
+        <div class="atlas-toolbar"><div><span class="atlas-dot"></span><strong>우리들의 여행 지도</strong><span class="atlas-subtitle">7개의 대륙, 끝없는 이야기</span></div><div class="zoom-controls"><button type="button" onclick="changeZoom(-0.2)" aria-label="지도 축소">−</button><output id="zoomLevel" aria-live="polite">100%</output><button type="button" onclick="changeZoom(0.2)" aria-label="지도 확대">＋</button><button type="button" onclick="resetZoom()" aria-label="지도 확대 초기화">↺</button></div></div>
+        <p class="map-help">친구를 눌러 여행 이야기를 만나 보세요. <span>작은 화면에서는 지도를 옆으로 밀어 볼 수 있어요.</span></p>
+        <div class="map-viewport" tabindex="0" aria-label="세계 지도. 방향키나 스크롤로 이동할 수 있습니다."><div id="mapZoomWrapper" class="map-zoom-wrapper">
+          <img class="atlas-art" src="images/travel-world.svg" alt="산과 숲, 랜드마크가 있는 일곱 대륙의 그림 지도" draggable="false">
+          <svg id="journeyOverlay" class="journey-overlay" viewBox="0 0 1200 780" aria-hidden="true"><path id="journeyRoute"/><path id="journeyHighlight"/><g id="journeyLeaders"></g><g id="journeyDestinations"></g></svg>
+          <div id="markerLayer"></div>
+        </div></div>
+        <div class="atlas-footer"><span><i class="route-key"></i> 책을 읽으며 나아가는 여행길</span><span>같은 위치의 친구들은 이름이 겹치지 않게 펼쳐 보여요</span></div>
+        <div id="journeyClassLegend" class="class-legend" aria-label="반별 탐험가 색상"></div>
+      </section>
+      <p id="journeyStatus" class="journey-status" role="status">탐험대 정보를 불러오고 있어요.</p>
+      <section id="journeyDetail" class="journey-detail" hidden aria-label="선택한 탐험가의 여행"><div class="detail-top"><div><p class="journey-eyebrow" id="detailClass"></p><h3 id="detailName"></h3></div><button type="button" id="closeJourney" aria-label="탐험가 상세 닫기">✕</button></div><p id="detailRoute"></p><progress id="detailProgress" max="100" value="0" aria-label="다음 대륙까지 진행도"></progress><p id="detailRemaining"></p><div id="journeyPassport" class="journey-passport" aria-label="도착한 대륙의 여행 도장"></div><button type="button" id="journeyBooks" class="button is-small is-info is-light">이 친구의 독서 기록 보기 →</button></section>
+      <div class="journey-roster-title"><h3>탐험가들의 독서 기록</h3><span>걸음마다 쌓이는 우리들의 이야기</span></div>
       <div id="classTableContainer" class="table-container mt-4" style="display:none;"><table class="table is-fullwidth is-striped custom-table"><thead><tr><th>반</th><th>번호</th><th>탐험가 이름</th><th>누적 걸음</th><th>위치</th><th>최근 읽은 책</th><th>비행일</th><th>관리</th></tr></thead><tbody id="classTableBody"></tbody></table></div>
       
       <div id="dashProfile" style="display:none; margin-top:20px;">
@@ -163,19 +127,21 @@
     </div>
   </div>
 
+  <script src="journey-model.js"></script>
+  <script src="journey.js"></script>
   <script>
     // 🚨 [필수] API_URL을 선생님의 구글 웹앱 주소로 반드시 변경하세요!
     const API_URL = "https://script.google.com/macros/s/AKfycby6p6rz82mRayL_v6uUquzeeT31WZSSKKbsKGF07r9eFQe7ocrl-3gtNG7oMeWZA0xU/exec";
     
-    let studentDB = {}; let globalData = []; let allRequiredBooks = {};
+    let studentDB = {}; let globalData = []; let allRequiredBooks = {}; let journeyDataReady = false;
     
-    const MAP_COORDS = { "아시아": {x: 85, y: 30.7}, "유럽": {x: 60, y: 18.4}, "북아메리카": {x: 15, y: 18.4}, "남아메리카": {x: 25, y: 61.5}, "아프리카": {x: 55, y: 64.6}, "오세아니아": {x: 90, y: 76.9}, "남극": {x: 50, y: 83.0} };
+
     const LOCATIONS = [ {min:3000, e:"🐧", n:"남극"}, {min:2300, e:"🐨", n:"오세아니아"}, {min:1800, e:"🦁", n:"아프리카"}, {min:1600, e:"🦜", n:"남아메리카"}, {min:900, e:"🗽", n:"북아메리카"}, {min:700, e:"🏰", n:"유럽"}, {min:0, e:"⛩️", n:"아시아"} ];
     const classMap = { "1":["오세아니아반"], "2":["오세아니아반"], "3":["아시아반"], "4":["아시아반"], "5":["아프리카반"], "6":["아프리카반"], "7":["유럽반"], "8":["유럽반"], "9":["아메리카반"], "10":["아메리카반"], "11":["아틀랜틱반"], "12":["아틀랜틱반"] };
 
     let currentZoom = 100;
-    function changeZoom(d) { currentZoom = Math.min(300, Math.max(100, currentZoom + (d * 100))); document.getElementById('mapZoomWrapper').style.width = currentZoom + '%'; }
-    function resetZoom() { currentZoom = 100; document.getElementById('mapZoomWrapper').style.width = '100%'; }
+    function changeZoom(d) { currentZoom = Math.min(200, Math.max(100, currentZoom + (d * 100))); document.getElementById('mapZoomWrapper').style.width = (1200 * currentZoom / 100) + 'px'; document.getElementById('zoomLevel').textContent = currentZoom + '%'; }
+    function resetZoom() { currentZoom = 100; changeZoom(0); const viewport = document.querySelector('.map-viewport'); viewport.scrollTo({left:0, top:0}); }
 
     function setTodayDate() {
       const today = new Date(); const offset = today.getTimezoneOffset() * 60000;
@@ -192,18 +158,20 @@
       setTodayDate(); 
       try { 
         document.getElementById('errorBox').style.display = 'none';
-        studentDB = await fetch(API_URL + "?action=getStudentDB").then(r => r.json()); 
+        studentDB = await fetch(API_URL + "?action=getStudentDB").then(r => { if (!r.ok) throw new Error('Student data unavailable'); return r.json(); });
         await loadGlobalData();
       } catch(e) { 
         document.getElementById('errorBox').style.display = 'block';
         document.getElementById('errorBox').innerText = "데이터 연결 오류! API URL이 정확한지 확인해주세요.";
+        document.getElementById('journeyStatus').textContent = '탐험대 정보를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.';
       } 
     };
 
     async function loadGlobalData() {
-      const res = await fetch(API_URL + "?action=getFullData").then(r => r.json());
+      const res = await fetch(API_URL + "?action=getFullData").then(r => { if (!r.ok) throw new Error("Reading data unavailable"); return r.json(); });
       globalData = res.logs || []; 
       allRequiredBooks = res.allRequiredBooks || {};
+      journeyDataReady = true;
       
       const mSelect = document.getElementById('monthFilter');
       if(mSelect && mSelect.options.length === 0 && res.months) { 
@@ -229,46 +197,54 @@
       } catch(e) { alert("저장 중 오류 발생"); btn.classList.remove('is-loading'); }
     };
 
+    // Build the map and table from the same class + grade + name identity.
     function renderClassTable() {
-      const cls = document.getElementById('dashClassSelect').value; const layer = document.getElementById('markerLayer'); const tbody = document.getElementById('classTableBody'); const container = document.getElementById('classTableContainer'); document.getElementById('dashProfile').style.display = 'none';
-      layer.innerHTML = ''; if(!cls) { container.style.display='none'; return; }
-      if(cls === "전체") layer.classList.add("zoom-out"); else layer.classList.remove("zoom-out");
-      
-      let students = []; 
-      if(studentDB && typeof studentDB === 'object') {
-        for(let g in studentDB) for(let c in studentDB[g]) if(cls === "전체" || cls === c) if(Array.isArray(studentDB[g][c])) studentDB[g][c].forEach(n => students.push({n: n, c: c}));
-      }
-      students.sort((a,b) => a.n.localeCompare(b.n));
-
-      if (students.length === 0) { tbody.innerHTML = '<tr><td colspan="8">데이터가 없습니다.</td></tr>'; container.style.display = 'block'; return; }
-
-      let html = '';
+      if (!journeyDataReady) return;
+      const cls = document.getElementById('dashClassSelect').value;
+      const tbody = document.getElementById('classTableBody');
+      document.getElementById('dashProfile').style.display = 'none';
+      const students = JourneyUI.getStudents(studentDB, globalData, cls);
+      JourneyUI.render(students, cls);
+      tbody.replaceChildren();
       students.forEach((s, index) => {
-        const logs = globalData.filter(r => r[2] === s.c && r[3] === s.n).sort((a,b) => new Date(b[0]) - new Date(a[0])); 
-        const steps = logs.reduce((sum, r) => sum + r[7], 0); const loc = LOCATIONS.find(l => steps >= l.min) || LOCATIONS[6];
-        
-        if(MAP_COORDS[loc.n]) {
-          const coord = MAP_COORDS[loc.n]; const marker = document.createElement('div'); marker.className = 'student-marker';
-          const spread = cls === '전체' ? 6 : 3; marker.style.left = (coord.x + (Math.random()-0.5)*spread) + '%'; marker.style.top = (coord.y + (Math.random()-0.5)*spread) + '%';
-          marker.innerHTML = `<div class="marker-dot"></div><div class="marker-name">${s.n}</div>`; layer.appendChild(marker);
-        }
-        
-        const recentBook = logs.length > 0 ? logs[0][4] : '-'; const recentDate = logs.length > 0 ? new Date(logs[0][0]).toLocaleDateString() : '-';
-        html += `<tr><td>${s.c}</td><td>${index+1}</td><td><a onclick="showStudentProfile('${s.n}')" class="has-text-weight-bold has-text-link">${s.n}</a></td><td>${steps}</td><td>${loc.e} ${loc.n}</td><td>${recentBook}</td><td>${recentDate}</td><td><button class="button is-small is-outlined is-info" onclick="copySingleStudentList('${s.n}')">복사</button></td></tr>`;
+        const row = document.createElement('tr');
+        const values = [s.c, index + 1, s.n, s.steps.toLocaleString(), `${s.journey.current.emoji} ${s.journey.current.name}`, s.logs[0]?.[4] || '-', s.logs[0] ? new Date(s.logs[0][0]).toLocaleDateString() : '-'];
+        values.forEach((value, col) => {
+          const cell = document.createElement('td');
+          if (col === 2) { const button = document.createElement('button'); button.className = 'student-record-link'; button.textContent = value; button.onclick = () => { JourneyUI.select(s.key); showStudentProfile(s); }; cell.append(button); }
+          else cell.textContent = value;
+          row.append(cell);
+        });
+        const cell = document.createElement('td'), copy = document.createElement('button');
+        copy.className = 'button is-small is-outlined is-info'; copy.textContent = '복사'; copy.onclick = () => copySingleStudentList(s.logs); cell.append(copy); row.append(cell); tbody.append(row);
       });
-      tbody.innerHTML = html; container.style.display='block';
+      if (!students.length) { const row = tbody.insertRow(); const cell = row.insertCell(); cell.colSpan = 8; cell.textContent = '아직 등록된 탐험가가 없습니다.'; }
+      document.getElementById('classTableContainer').style.display = 'block';
     }
 
-    function showStudentProfile(name) { 
-      document.getElementById('classTableContainer').style.display = 'none'; const view = document.getElementById('dashProfile'); view.setAttribute('data-current-student', name); 
-      const myLogs = globalData.filter(r => r[3] === name).sort((a,b) => new Date(b[0]) - new Date(a[0])); 
-      const totalSteps = myLogs.reduce((sum, r) => sum + r[7], 0); const loc = LOCATIONS.find(l => totalSteps >= l.min) || LOCATIONS[6]; const recent = myLogs[0]; 
-      
-      document.getElementById('dName').innerText = `👋 ${name} 탐험가님`; document.getElementById('dInfo').innerText = recent ? `${recent[1]} | ${recent[2]}` : ''; document.getElementById('dSteps').innerText = totalSteps; document.getElementById('dLoc').innerText = `${loc.e} ${loc.n}`; document.getElementById('dRecentBook').innerText = recent ? recent[4] : '-'; document.getElementById('dRecentDate').innerText = recent ? new Date(recent[0]).toLocaleDateString() : '-'; document.getElementById('dBookList').innerHTML = myLogs.map(r => `<tr><td>${new Date(r[0]).toLocaleDateString()}</td><td>${r[4]}</td><td>${r[5]}p</td><td>+${r[7]}</td></tr>`).join(''); view.style.display = 'block'; 
+    let currentProfileLogs = [];
+    function showStudentProfile(student) {
+      document.getElementById('classTableContainer').style.display = 'none';
+      const view = document.getElementById('dashProfile');
+      const logs = student.logs; currentProfileLogs = logs;
+      const recent = logs[0];
+      document.getElementById('dName').textContent = `👋 ${student.n} 탐험가님`;
+      document.getElementById('dInfo').textContent = `${student.g}학년 | ${student.c}`;
+      document.getElementById('dSteps').textContent = student.steps.toLocaleString();
+      document.getElementById('dLoc').textContent = `${student.journey.current.emoji} ${student.journey.current.name}`;
+      document.getElementById('dRecentBook').textContent = recent ? recent[4] : '-';
+      document.getElementById('dRecentDate').textContent = recent ? new Date(recent[0]).toLocaleDateString() : '-';
+      const body = document.getElementById('dBookList'); body.replaceChildren();
+      logs.forEach(r => { const row = body.insertRow(); [new Date(r[0]).toLocaleDateString(), r[4], `${r[5]}p`, `+${r[7]}`].forEach(value => { row.insertCell().textContent = value; }); });
+      view.style.display = 'block';
     }
-
     function backToClassTable() { document.getElementById('dashProfile').style.display = 'none'; document.getElementById('classTableContainer').style.display = 'block'; }
-    function copySingleStudentList(name) { const myLogs = globalData.filter(r => r[3] === name).sort((a,b) => new Date(b[0]) - new Date(a[0])); const textToCopy = myLogs.map(r => { const d = new Date(r[0]); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}_${r[4]}`; }).join('\n'); if(textToCopy) { navigator.clipboard.writeText(textToCopy); alert('복사되었습니다!'); } }
+    async function copySingleStudentList(logs) {
+      const text = logs.map(r => { const d = new Date(r[0]); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${r[4]}`; }).join('\n');
+      if (!text) { alert('아직 독서 기록이 없어요.'); return; }
+      try { await navigator.clipboard.writeText(text); alert('복사되었습니다!'); } catch { alert('복사 권한을 확인해 주세요.'); }
+    }
+    function copyIndividualBookList() { return copySingleStudentList(currentProfileLogs); }
 
     function updateClassList() { const g = document.getElementById('gradeSelect').value; const c = document.getElementById('classSelect'); c.innerHTML = '<option value="">반 선택</option>'; if(g && classMap[g]) { classMap[g].forEach(cls => c.innerHTML += `<option value="${cls}">${cls}</option>`); c.disabled = false; if(classMap[g].length===1) { c.selectedIndex=1; updateStudentList(); } } }
     function updateStudentList() { const g = document.getElementById('gradeSelect').value, c = document.getElementById('classSelect').value, s = document.getElementById('studentSelect'); s.innerHTML = '<option value="">이름 선택</option>'; if(studentDB[g] && studentDB[g][c]) { studentDB[g][c].forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); s.disabled = false; } }

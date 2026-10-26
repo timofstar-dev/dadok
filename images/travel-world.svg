@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" fill="none">
+  <title>그림책 속 일곱 대륙 세계지도</title>
+  <desc>청록색 바다와 초록빛 대륙에 성, 산, 피라미드, 숲, 배와 펭귄이 있는 세계여행 지도.</desc>
+  <defs>
+    <linearGradient id="sea" x1="160" y1="0" x2="1050" y2="780" gradientUnits="userSpaceOnUse"><stop stop-color="#BDE7E5"/><stop offset="1" stop-color="#DBF0E8"/></linearGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#E3EDB9"/><stop offset="1" stop-color="#C6DEA4"/></linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#F4E4AE"/><stop offset="1" stop-color="#DDDAA0"/></linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FCFFF7"/><stop offset="1" stop-color="#DFEEE9"/></linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse"><path d="M120 0H0V120" stroke="#FFFFFF" stroke-opacity=".22" stroke-width="1"/></pattern>
+    <pattern id="waves" width="155" height="135" patternUnits="userSpaceOnUse"><path d="M40 55q6 5 12 0t12 0m44 42q5 4 10 0t10 0" stroke="#76B7B9" stroke-opacity=".35" stroke-width="1.5" stroke-linecap="round"/></pattern>
+    <filter id="shore" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="0" flood-color="#81B9B1" flood-opacity=".38"/></filter>
+    <g id="tree"><path d="M0 18V36" stroke="#8C9662" stroke-width="3" stroke-linecap="round"/><path d="M0-5 12 17H6L16 29H-16L-6 17H-12Z" fill="#79AE82"/><path d="M0-5V29H-16L-6 17H-12Z" fill="#8DBE8C"/></g>
+    <g id="palm"><path d="M0 29Q6 13 2-2" stroke="#AB9568" stroke-width="4" stroke-linecap="round"/><path d="M2-2Q-16-18-21-2Q-9-8 2-2M2-2Q-5-24 8-20Q6-10 2-2M2-2Q22-16 27-2Q14-8 2-2M2-2Q20 0 17 15Q11 4 2-2" fill="#80AB76"/></g>
+    <g id="mountain"><path d="M-23 20 0-22 25 20Z" fill="#99B29A"/><path d="M0-22 25 20H0Z" fill="#799D88"/><path d="M0-22-9-5-2-8 3-4 9-7Z" fill="#F9FBEA"/></g>
+    <g id="cloud"><path d="M-22 8c-17-1-16-18-2-19 2-16 27-16 31-2 18-6 29 16 10 21Z" fill="#F9FFF8" fill-opacity=".78"/></g>
+    <g id="penguin"><ellipse cy="7" rx="10" ry="16" fill="#4B777B"/><ellipse cy="10" rx="7" ry="11" fill="#FFFEED"/><circle cx="-3" cy="0" r="1.2" fill="#F7F8E7"/><circle cx="3" cy="0" r="1.2" fill="#F7F8E7"/><path d="m-3 5 3 4 3-4" fill="#E9AB63"/><path d="m-3 23-8 1 6-4m9 3 8 1-6-4" stroke="#DDA268" stroke-width="2" stroke-linecap="round"/></g>
+  </defs>
+  <rect width="1200" height="780" rx="24" fill="url(#sea)"/>
+  <rect width="1200" height="780" rx="24" fill="url(#grid)"/>
+  <rect width="1200" height="780" rx="24" fill="url(#waves)"/>
+  <!-- Organic coastlines retain a readable, friendly atlas silhouette. -->
+  <g filter="url(#shore)" stroke="#F5F8D8" stroke-width="5" stroke-linejoin="round">
+    <path d="M96 141 79 116 102 98 144 100 166 76 203 85 230 66 268 87 291 78 320 95 337 126 376 142 353 163 317 174 304 204 280 226 272 251 246 249 233 225 207 217 193 191 165 189 147 166 117 171Z" fill="url(#land)"/>
+    <path d="m247 250 19 9 16 27 25 12 20 24-11 13-24-15-12-23-20-17Z" fill="url(#land)"/>
+    <path d="m303 339 39-8 43 26 27 32-9 35-18 33-9 46-25 37-19 27-14-11 2-39-17-29-13-34-17-24-2-35Z" fill="url(#land)"/>
+    <path d="m408 64 28-17 38 12 10 25-13 40-25 24-24-22-11-35Z" fill="url(#snow)"/>
+    <path d="m568 158 10-21 24-4 2-24 20-13 13 10-3 33 20 9 21-14 24 12 5 27-25 16-10 24-19 1-15-17-22 8-17-21-28 2Z" fill="url(#land)"/>
+    <path d="m578 166-18-10-12 9 5 23 16 9 9-14Z" fill="url(#land)"/>
+    <path d="m702 137 11-33 41-15 22-22 39 9 23-10 39 19 43-7 22 13 49-3 46 21 38-2 21 26-17 24-42 1-14 20 21 25-2 27-26 22-9 30-21 17-16 35-19-2-13-25-23-9-10-30-23-18-9 28-18 26-19-15-13-42-31-9-16-29-21 9-30-24-24 1-15-20Z" fill="url(#land)"/>
+    <path d="m1011 221 11-14 8 12-5 21-10 11-7-10Z" fill="url(#land)"/>
+    <path d="m940 312 16-2 13 13-5 18-11-8Z" fill="url(#land)"/>
+    <path d="m930 354 21 1 16 11 26-4 15 12-11 9-24-6-17 1-29-13Z" fill="url(#land)"/>
+    <path d="m1080 350 9-6 10 19-4 11-12-9Z" fill="url(#land)"/>
+    <path d="m576 276 29-20 33 8 26-4 21 21 17 28 24 12-10 26-25 23-7 46-27 44-21 11-21-33-10-30-23-26-16-32-20-17 3-33Z" fill="url(#sand)"/>
+    <path d="m728 410 11-21 10 3-2 29-12 20-9-7Z" fill="url(#land)"/>
+    <path d="m928 472 18-24 28 5 22-17 30 6 17 22 32 12 12 30-14 27-31 7-22-9-29 11-31-12-33-2-13-25Z" fill="url(#sand)"/>
+    <path d="m1107 547 13-15 9 8-8 20-18 10-8-8Zm-9 30 7-6 7 10-11 16-13 6-4-9Z" fill="url(#land)"/>
+    <path d="M267 691q29-24 77-13l28-15 45 12 29-7 32 17 33-8 32-15 31 12 35-2 23-12 37 12 31-5 37 14 44-8 26 19 32-5 45 15 15 28-48 12-37-5-47 8-42-5-41 9-36-8-39 7-42-6-36 9-49-9-38 2-45-14Z" fill="url(#snow)"/>
+  </g>
+  <!-- Terrain details stay quiet under the traveler overlays. -->
+  <g opacity=".7" stroke="#A9C78B" stroke-width="2" stroke-linecap="round"><path d="m139 144 11-9m12 10 10-6m175 245 13 10m-5 31 10 7m420-291 15-8m86 23 14-8m-89 111 13-6m-221 118 12 6m-4 17 13 7m363 144 14 6"/></g>
+  <g><use href="#mountain" transform="translate(157 131) scale(.75)"/><use href="#mountain" transform="translate(176 139) scale(.62)"/><use href="#tree" transform="translate(244 126) scale(.62)"/><use href="#tree" transform="translate(265 133) scale(.55)"/><use href="#tree" transform="translate(224 137) scale(.45)"/></g>
+  <!-- New York: a small skyline and a welcoming statue. -->
+  <g transform="translate(316 167)"><ellipse cy="15" rx="39" ry="9" fill="#BAD29D"/><path d="M-35 10v-28h13v28m4 0v-40h16v40m8 0v-23h11v23" fill="#E4C889" stroke="#A79265" stroke-width="1.5"/><path d="M-10-30v-9m-3 9h6" stroke="#A79265" stroke-width="2"/><path d="m24 9-5-17 5-16 6 16-4 17Z" fill="#70A998"/><circle cx="25" cy="-28" r="4" fill="#70A998"/><path d="m22-30-2-5 5 2 5-3-2 7M22-19l-7-15m0 0 1-9" stroke="#70A998" stroke-width="3" stroke-linecap="round"/><path d="m13-44 3-5 3 5" fill="#E6AF5D"/><path d="M15 12h22v5H15Z" fill="#D7C995"/></g>
+  <!-- Europe: a tiny castle town. -->
+  <g transform="translate(626 120)"><ellipse cy="16" rx="40" ry="8" fill="#B0CA91"/><path d="M-30 12v-31h14v31M15 12v-31h14v31M-17 12v-22h33v22" fill="#F5E6BA" stroke="#AF9E7D" stroke-width="1.5"/><path d="m-34-19 11-16 11 16m23 0 11-16 11 16M-11-11 11-11 0-27Z" fill="#D4937F"/><path d="M-4 12V0a4 4 0 0 1 8 0v12" fill="#ABAC88"/><path d="M-24-11v6m46-6v6" stroke="#A9987B" stroke-width="3"/><path d="M0-27v-13l13 3-13 4" fill="#E4B657" stroke="#AD9970" stroke-width="1.5"/></g>
+  <use href="#mountain" transform="translate(686 191) scale(.6)"/>
+  <!-- Asia: snow-tipped peaks, a pagoda and a flowering tree. -->
+  <use href="#mountain" transform="translate(798 162) scale(.9)"/><use href="#mountain" transform="translate(827 165) scale(.7)"/>
+  <g transform="translate(945 150)"><ellipse cy="18" rx="39" ry="9" fill="#ADC98F"/><path d="M-19 15v-17h38v17m-32-22v-14h26v14m-20-22v-11h14v11" fill="#F4DFAD" stroke="#B89072" stroke-width="1.5"/><path d="M-28-3q14 0 28-13Q14-3 28-3ZM-22-22q11 0 22-12 11 12 22 12ZM-15-40q8 0 15-11 7 11 15 11Z" fill="#BA7D6C"/><path d="M-5 15V4h10v11" fill="#B18468"/><path d="M0-51v-7" stroke="#B18468" stroke-width="2"/></g>
+  <g transform="translate(882 213)"><path d="M0 13V-9m0 8-10-7m10 3 9-9" stroke="#A48C70" stroke-width="3"/><circle cx="-11" cy="-13" r="10" fill="#EDC5AD"/><circle cy="-21" r="11" fill="#F3D2B9"/><circle cx="10" cy="-14" r="9" fill="#EBC4AA"/></g>
+  <!-- South America: lush rainforest and the Andes. -->
+  <use href="#mountain" transform="translate(306 379) scale(.6)"/><use href="#mountain" transform="translate(313 406) scale(.5)"/>
+  <g transform="translate(363 390)"><ellipse cy="25" rx="35" ry="8" fill="#AAC58A"/><use href="#palm" transform="translate(-15 -3) scale(.8)"/><use href="#palm" transform="translate(13 0) scale(.65)"/><path d="M-1 21q13-14 25-1" stroke="#8DB6A1" stroke-width="5" stroke-linecap="round"/><path d="m8-5 8-6 9 4-10 5Z" fill="#D5AA66"/><path d="m21-8 10 3-9 2Z" fill="#9B7B5F"/></g>
+  <!-- Africa: pyramids, acacia and a small giraffe. -->
+  <g transform="translate(620 304)"><ellipse cy="17" rx="44" ry="9" fill="#D7CE95"/><path d="m-40 13 25-37 27 37Z" fill="#E5BD77"/><path d="m-15-24 27 37h-27Z" fill="#CEA663"/><path d="m-7 14 23-32 24 32Z" fill="#F0D18B"/><path d="m16-18 24 32H16Z" fill="#DDBA75"/></g>
+  <g transform="translate(675 359)"><path d="M0 24V1m0 7-10-8m10 8 10-8" stroke="#9B976D" stroke-width="3"/><path d="M-24 0q-3-12 12-14 10-9 21-1 17-2 19 13-18 8-52 2Z" fill="#A2B67B"/><path d="M-23 34V19h-12v15m2-13 1-24h6l4 25m-10-25-3-4m8 4 3-4" stroke="#B99863" stroke-width="4" stroke-linejoin="round"/><path d="m-33 4 5 1m-4 6 5 2" stroke="#DFCA8B" stroke-width="3"/></g>
+  <!-- Oceania: red rock and sail roofs beside the coast. -->
+  <g transform="translate(978 476)"><ellipse cy="11" rx="29" ry="7" fill="#D1C791"/><path d="M-27 9-18-7-7-14 8-13 20-4 28 9Z" fill="#CB9774"/><path d="m-12-5 2 14M3-8 7 9" stroke="#E2B18A" stroke-width="2"/></g>
+  <g transform="translate(1053 501)"><path d="M-32 14h66" stroke="#8DAE9C" stroke-width="3"/><path d="M-27 11q16-20 15-42Q8-10 7 11Z" fill="#FFF9DE" stroke="#C1C9A3" stroke-width="1.5"/><path d="M-6 11q15-17 17-32Q29-4 26 11Z" fill="#F5F2D4" stroke="#C1C9A3" stroke-width="1.5"/></g>
+  <!-- Antarctic expedition camp. -->
+  <g transform="translate(535 697)"><path d="m-29 17 30-39 29 39Z" fill="#E4B16D" stroke="#C49863" stroke-width="1.5"/><path d="M1-22v39h29Z" fill="#F1CB85"/><path d="m-7 17 8-21 9 21Z" fill="#B38864"/><path d="M38 17v-44l17 5-17 7" fill="#D89078" stroke="#A28D71" stroke-width="2"/></g>
+  <use href="#penguin" transform="translate(764 699) scale(.95)"/><use href="#penguin" transform="translate(790 707) scale(.7)"/>
+  <path d="m429 703 13-12 14 12m238-18 11-7 10 7m-111 50 11-8 12 8" stroke="#C4DAD4" stroke-width="2" stroke-linecap="round"/>
+  <!-- A quiet sailing boat and compass establish an adventure-atlas mood. -->
+  <g transform="translate(453 473)"><path d="M-20 12h42l-8 11H-10Z" fill="#AD9775"/><path d="M1 10v-44m-4 4-20 35H-3Z" fill="#FFFADE" stroke="#98B4A7" stroke-width="1.5"/><path d="M5-25 23 5H5Z" fill="#F1D8A8"/><path d="M-28 27q9 4 18 0m22 0q9 4 18 0" stroke="#86B7B4" stroke-width="2" stroke-linecap="round"/></g>
+  <g transform="translate(1087 654)" opacity=".72"><circle r="32" stroke="#6D9D99" stroke-width="1"/><circle r="24" stroke="#7EAAA3" stroke-dasharray="2 5"/><path d="M0-43 7-7 43 0 7 7 0 43-7 7-43 0-7-7Z" fill="#EAF4DA" stroke="#7CA69C"/><path d="M0-43 7-7 0 0Z" fill="#C99C71"/><path d="M0 43-7 7 0 0Z" fill="#83AAA0"/><circle r="4" fill="#90B2A3"/></g>
+  <use href="#cloud" transform="translate(86 286) scale(1.05)"/><use href="#cloud" transform="translate(493 190) scale(.8)"/><use href="#cloud" transform="translate(1085 293) scale(1.1)"/><use href="#cloud" transform="translate(834 567) scale(.8)"/>
+</svg>
