@@ -6,6 +6,11 @@
   let selected = null, searchVersion = 0, detailVersion = 0;
   let searchController, detailController;
   const timeoutMs = 12000;
+  function updateStoreLinks() {
+    const query = $('bookSearchQuery').value.trim();
+    $('yes24SearchLink').href = query ? `https://www.yes24.com/Product/Search?${new URLSearchParams({domain:'BOOK',query})}` : 'https://www.yes24.com';
+    $('kyoboSearchLink').href = query ? `https://search.kyobobook.co.kr/search?${new URLSearchParams({keyword:query})}` : 'https://www.kyobobook.co.kr';
+  }
   function status(message, isError = false) {
     $('bookSearchStatus').textContent = message;
     $('bookSearchStatus').classList.toggle('is-error', isError);
@@ -21,7 +26,8 @@
   }
   function errorMessage(error, timeout) {
     if (timeout) return '책 검색 응답이 늦어지고 있어요. 다시 검색하거나 책 정보를 직접 적어 주세요.';
-    if (error.code === 'RATE_LIMIT') return '지금은 책 검색 이용량이 많아요. 잠시 뒤 다시 검색하거나 직접 입력해 주세요.';
+    if (error.code === 'RATE_LIMIT') return 'YES24에서 검색 요청을 일시적으로 제한하고 있어요. 잠시 뒤 다시 시도해 주세요.';
+    if (error.code === 'BAD_RESPONSE') return 'YES24의 도서 정보를 읽지 못했어요. 잠시 뒤 다시 시도하거나 책 정보를 직접 적어 주세요.';
     if (error.code === 'NOT_FOUND') return '이 판본의 상세 정보를 찾지 못했어요. 다른 판본을 선택하거나 직접 입력해 주세요.';
     if (error.code === 'INVALID_QUERY') return '검색할 제목을 1~120글자로 입력해 주세요.';
     return '책 검색에 연결하지 못했어요. 다시 시도하거나 아래 입력란에 직접 적어 주세요.';
@@ -108,11 +114,13 @@
     const target = includePages ? $('bookTitleInput') : $('pagesInput'); target.focus({preventScroll:true}); target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
   }
   $('bookSearchForm').addEventListener('submit', search);
+  $('bookSearchQuery').addEventListener('input', updateStoreLinks);
   $('applyBookTitle').addEventListener('click', () => apply(false));
   $('applyBookPages').addEventListener('click', () => apply(true));
   helper.addEventListener('toggle', () => {
     if (helper.open) {
       if (!$('bookSearchQuery').value) $('bookSearchQuery').value = $('bookTitleInput').value.replace(/\([^)]*\)\s*$/, '').trim().slice(0,120);
+      updateStoreLinks();
     } else {
       ++searchVersion; ++detailVersion; searchController?.abort(); detailController?.abort(); busy(false);
       if (!selected) { for (const button of $('bookEditionList').querySelectorAll('button')) button.setAttribute('aria-pressed','false'); status('제목을 검색하거나 목록에서 판본을 선택해 주세요.'); }

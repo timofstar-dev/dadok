@@ -43,6 +43,12 @@
             <div class="book-search-controls"><input id="bookSearchQuery" type="search" class="input" placeholder="예: 푸른 사자 와니니" minlength="1" maxlength="120" autocomplete="off" required aria-describedby="bookSearchHint"><button id="bookSearchButton" class="button is-info" type="submit">책 검색</button></div>
             <p id="bookSearchHint">같은 제목이어도 쪽수가 다를 수 있어요. 출판사와 출간일, ISBN을 비교해 주세요.</p>
           </form>
+          <div class="book-store-search" aria-label="서점에서 직접 검색">
+            <span>서점에서 직접 확인</span>
+            <a id="yes24SearchLink" href="https://www.yes24.com" target="_blank" rel="noopener noreferrer">YES24에서 검색 ↗</a>
+            <a id="kyoboSearchLink" href="https://www.kyobobook.co.kr" target="_blank" rel="noopener noreferrer">교보문고에서 검색 ↗</a>
+            <small>새 창으로 열려요</small>
+          </div>
           <p id="bookSearchStatus" class="book-search-status" role="status" aria-live="polite">검색할 책 제목을 입력해 주세요.</p>
           <div id="bookSearchResults" class="book-search-results" aria-busy="false">
             <ul id="bookEditionList" class="book-edition-list" aria-label="검색된 책의 판본"></ul>
@@ -55,7 +61,7 @@
             <div class="book-apply-actions"><button id="applyBookTitle" type="button" class="button is-info is-light" disabled>제목·지은이만 적용</button><button id="applyBookPages" type="button" class="button is-info" disabled>다 읽었어요 · 전체 쪽수 적용</button></div>
             <p class="book-apply-note">전체 쪽수를 적용하면 입력된 제목과 읽은 페이지 수가 바뀝니다. 일부만 읽었다면 제목만 적용하고 읽은 만큼 직접 적어 주세요.</p>
           </section>
-          <p class="book-helper-source">도서 정보 제공: Google Books · 책 정보가 없으면 아래 입력란에 직접 적을 수 있어요.</p>
+          <p class="book-helper-source">자동 도서 정보: YES24 · 같은 제목의 판본을 비교해 주세요. 정보가 없으면 서점에서 확인한 뒤 직접 입력할 수 있어요.</p>
         </div>
       </details>
       <p id="bookAppliedStatus" class="book-applied-status" role="status" aria-live="polite"></p>
@@ -337,4 +343,4 @@
     }
   </script>
 </body>
-</html> 
+</html>

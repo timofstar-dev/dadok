@@ -5,113 +5,110 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const API = 'https://www.googleapis.com/books/v1/volumes';
-  const VALID_ID = /^[A-Za-z0-9_-]{1,128}$/;
+  const API = '/api/books';
+  const VALID_ID = /^[1-9]\d{0,15}$/;
+  const MESSAGES = Object.freeze({
+    INVALID_QUERY: 'Enter a valid book title or select an edition.',
+    NOT_FOUND: 'This edition is no longer available.',
+    RATE_LIMIT: 'Book search is temporarily limited. Please try again later.',
+    BAD_RESPONSE: 'The book service returned unexpected information.',
+    UNAVAILABLE: 'The book service is temporarily unavailable.'
+  });
 
   class CatalogError extends Error {
-    constructor(code, message) {
-      super(message);
+    constructor(code) {
+      super(MESSAGES[code] || MESSAGES.UNAVAILABLE);
       this.name = 'CatalogError';
-      this.code = code;
+      this.code = Object.hasOwn(MESSAGES, code) ? code : 'UNAVAILABLE';
     }
   }
 
-  const text = value => typeof value === 'string' ? value.trim() : '';
+  const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  function optionalText(value) {
+    if (value === undefined || value === null) return '';
+    if (typeof value !== 'string') throw new CatalogError('BAD_RESPONSE');
+    return value.trim();
+  }
 
-  // These are plain text fields. Consumers must render them using textContent,
-  // never innerHTML. Details always belong to this exact Google Books volume.
-  function normalize(volume) {
-    if (!volume || !VALID_ID.test(text(volume.id)) || !volume.volumeInfo ||
-        typeof volume.volumeInfo !== 'object' || !text(volume.volumeInfo.title)) {
-      throw new CatalogError('BAD_RESPONSE', 'Book information is incomplete.');
+  // Metadata is plain text, never HTML. The source link is constructed locally
+  // from a validated YES24 product ID, without trusting a returned URL.
+  function normalize(book) {
+    if (!isObject(book) || typeof book.id !== 'string' || !VALID_ID.test(book.id) ||
+        typeof book.title !== 'string' || !book.title.trim()) {
+      throw new CatalogError('BAD_RESPONSE');
     }
-    const info = volume.volumeInfo;
-    const identifiers = Array.isArray(info.industryIdentifiers) ? info.industryIdentifiers : [];
-    const isbn13 = identifiers.find(item => item && item.type === 'ISBN_13' && /^\d{13}$/.test(text(item.identifier)));
-    const isbn10 = identifiers.find(item => item && item.type === 'ISBN_10' && /^\d{9}[\dXx]$/.test(text(item.identifier)));
-    const isbn = isbn13 || isbn10;
-    const id = text(volume.id);
+    const authors = book.authors === undefined ? [] : book.authors;
+    if (!Array.isArray(authors) || authors.some(author => typeof author !== 'string')) {
+      throw new CatalogError('BAD_RESPONSE');
+    }
+    const pageCount = book.pageCount ?? null;
+    if (pageCount !== null && (!Number.isSafeInteger(pageCount) || pageCount <= 0)) {
+      throw new CatalogError('BAD_RESPONSE');
+    }
+    const isbn = optionalText(book.isbn).toUpperCase();
+    if (isbn && !/^(?:\d{13}|\d{9}[\dX])$/.test(isbn)) throw new CatalogError('BAD_RESPONSE');
+    const language = optionalText(book.language) || 'ko';
+    if (language !== 'ko') throw new CatalogError('BAD_RESPONSE');
     return {
-      id,
-      title: text(info.title),
-      subtitle: text(info.subtitle),
-      authors: Array.isArray(info.authors) ? [...new Set(info.authors.map(text).filter(Boolean))] : [],
-      publisher: text(info.publisher),
-      publishedDate: text(info.publishedDate),
-      pageCount: Number.isSafeInteger(info.pageCount) && info.pageCount > 0 ? info.pageCount : null,
-      isbn: isbn ? text(isbn.identifier).toUpperCase() : '',
-      language: text(info.language),
-      infoUrl: `https://books.google.com/books?id=${encodeURIComponent(id)}`
+      id: book.id,
+      title: book.title.trim(),
+      subtitle: optionalText(book.subtitle),
+      authors: [...new Set(authors.map(author => author.trim()).filter(Boolean))],
+      publisher: optionalText(book.publisher),
+      publishedDate: optionalText(book.publishedDate),
+      pageCount,
+      isbn,
+      language,
+      infoUrl: `https://www.yes24.com/Product/Goods/${book.id}`
     };
   }
 
-  async function request(url, { signal, fetchImpl = globalThis.fetch } = {}) {
-    if (typeof fetchImpl !== 'function') {
-      throw new CatalogError('UNAVAILABLE', 'Book search is unavailable in this browser.');
-    }
+  async function request(url, {signal, fetchImpl = globalThis.fetch} = {}) {
+    if (typeof fetchImpl !== 'function') throw new CatalogError('UNAVAILABLE');
     let response;
-    try {
-      response = await fetchImpl(url, { signal, credentials: 'omit' });
-    } catch (error) {
-      // Preserve cancellation so stale searches never become visible errors.
+    try { response = await fetchImpl(url, {signal, credentials: 'omit'}); }
+    catch (error) {
       if (signal?.aborted || error?.name === 'AbortError') throw error;
-      throw new CatalogError('UNAVAILABLE', 'The book service could not be reached.');
-    }
-    if (!response.ok) {
-      if (response.status === 404) throw new CatalogError('NOT_FOUND', 'This edition is no longer available.');
-      let quota = response.status === 429;
-      if (response.status === 403) {
-        try {
-          const body = await response.json();
-          quota = Array.isArray(body?.error?.errors) && body.error.errors.some(item =>
-            /quota|rateLimit|dailyLimit/i.test(text(item?.reason)));
-          quota ||= body?.error?.status === 'RESOURCE_EXHAUSTED';
-        } catch (_) { /* An unreadable error body is still an unavailable service. */ }
-      }
-      if (quota) throw new CatalogError('RATE_LIMIT', 'Book search is temporarily limited. Please try again later.');
-      throw new CatalogError('UNAVAILABLE', 'The book service is temporarily unavailable.');
+      throw new CatalogError('UNAVAILABLE');
     }
     let body;
     try { body = await response.json(); }
     catch (error) {
       if (signal?.aborted || error?.name === 'AbortError') throw error;
-      throw new CatalogError('BAD_RESPONSE', 'The book service returned unreadable information.');
+      if (response.ok) throw new CatalogError('BAD_RESPONSE');
     }
-    if (!body || typeof body !== 'object' || Array.isArray(body) || body.error) {
-      throw new CatalogError('BAD_RESPONSE', 'The book service returned unexpected information.');
+    if (!response.ok || (isObject(body) && body.error)) {
+      const returnedCode = isObject(body?.error) ? body.error.code : null;
+      // Never surface raw server messages, provider markup, or diagnostic data.
+      if (typeof returnedCode === 'string' && Object.hasOwn(MESSAGES, returnedCode)) {
+        throw new CatalogError(returnedCode);
+      }
+      const fallback = response.status === 400 ? 'INVALID_QUERY' : response.status === 404 ? 'NOT_FOUND' :
+        response.status === 429 ? 'RATE_LIMIT' : response.ok ? 'BAD_RESPONSE' : 'UNAVAILABLE';
+      throw new CatalogError(fallback);
     }
+    if (!isObject(body) || body.source !== 'YES24') throw new CatalogError('BAD_RESPONSE');
     return body;
   }
 
   async function search(query, options = {}) {
-    const title = text(query);
-    if (title.length < 1 || title.length > 120) {
-      throw new CatalogError('INVALID_QUERY', 'Enter a book title between 1 and 120 characters.');
-    }
-    const params = new URLSearchParams({q: `intitle:${title}`, printType: 'books', maxResults: '20'});
-    const body = await request(`${API}?${params}`, options);
-    if (body.items === undefined && body.totalItems === 0) return [];
-    if (!Array.isArray(body.items)) throw new CatalogError('BAD_RESPONSE', 'The search result list is missing.');
+    const title = typeof query === 'string' ? query.trim() : '';
+    if (title.length < 1 || title.length > 120) throw new CatalogError('INVALID_QUERY');
+    const body = await request(`${API}/search?${new URLSearchParams({q: title})}`, options);
+    if (!Array.isArray(body.books)) throw new CatalogError('BAD_RESPONSE');
     const seen = new Set(), results = [];
-    for (const item of body.items) {
-      let edition;
-      try { edition = normalize(item); }
-      catch (error) { if (error.code === 'BAD_RESPONSE') continue; throw error; }
+    for (const item of body.books) {
+      const edition = normalize(item);
       if (!seen.has(edition.id)) { seen.add(edition.id); results.push(edition); }
-    }
-    // A broken nonempty payload is different from a real zero-result search.
-    if (body.items.length && !results.length) {
-      throw new CatalogError('BAD_RESPONSE', 'No usable editions were returned.');
     }
     return results;
   }
 
   async function details(id, options = {}) {
-    if (typeof id !== 'string' || !VALID_ID.test(id)) {
-      throw new CatalogError('INVALID_QUERY', 'Select a valid book edition.');
-    }
-    const result = normalize(await request(`${API}/${encodeURIComponent(id)}`, options));
-    if (result.id !== id) throw new CatalogError('BAD_RESPONSE', 'The service returned a different edition.');
+    if (typeof id !== 'string' || !VALID_ID.test(id)) throw new CatalogError('INVALID_QUERY');
+    const body = await request(`${API}/details?${new URLSearchParams({id})}`, options);
+    const result = normalize(body.book);
+    if (result.id !== id) throw new CatalogError('BAD_RESPONSE');
     return result;
   }
 

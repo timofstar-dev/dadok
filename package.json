@@ -1,0 +1,10 @@
+{
+  "name": "dadok",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "miniflare": "4.20260730.0"
+  }
+}
