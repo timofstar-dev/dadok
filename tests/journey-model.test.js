@@ -92,10 +92,10 @@ test('mixed route progress preserves data and has deterministic seats', () => {
 });
 
 test('larger rosters fit an expanded map and impossible dimensions fail explicitly', () => {
-  const travelers = Array.from({ length: 300 }, (_, i) => ({ key: String(i), x: 960, y: 235 }));
+  const travelers = Array.from({ length: 500 }, (_, i) => ({ key: String(i), x: 960, y: 235 }));
   assert.throws(() => layoutTravelers(travelers), RangeError);
   const layout = layoutTravelers(travelers, 1200, 1100);
-  assert.equal(layout.length, 300);
+  assert.equal(layout.length, 500);
   checkBoundsAndCollisions(layout, 1200, 1100);
   assert.throws(() => layoutTravelers([], 0, 780), RangeError);
   assert.throws(() => layoutTravelers([{ key: 'a' }, { key: 'a' }]), TypeError);
@@ -117,4 +117,16 @@ test('nameplates leave destination names visible', () => {
   for (const seat of layout) for (const rect of reserved) {
     assert.ok(seat.displayX+MARKER_WIDTH/2<=rect.x || seat.displayX-MARKER_WIDTH/2>=rect.x+rect.width || seat.displayY+MARKER_HEIGHT/2<=rect.y || seat.displayY-MARKER_HEIGHT/2>=rect.y+rect.height);
   }
+});
+
+
+test('30 nearby children occupy a compact group while all nameplates stay separate', () => {
+  const travelers = Array.from({length:30}, (_,i) => ({key:String(i),x:960,y:235}));
+  const layout = layoutTravelers(travelers);
+  const width = Math.max(...layout.map(s => s.displayX)) - Math.min(...layout.map(s => s.displayX)) + MARKER_WIDTH;
+  const height = Math.max(...layout.map(s => s.displayY)) - Math.min(...layout.map(s => s.displayY)) + MARKER_HEIGHT;
+  // The previous 84×48 layout occupied a 420×384 bounding box for this roster.
+  assert.ok(width * height <= 420 * 384 * 0.65, `group spreads over ${width}×${height}`);
+  assert.ok(Math.max(...layout.map(s => Math.hypot(s.displayX - s.x, s.displayY - s.y))) < 160);
+  checkBoundsAndCollisions(layout,1200,780);
 });

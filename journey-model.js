@@ -14,8 +14,8 @@
     { name: '오세아니아', min: 2300, x: 1010, y: 540, emoji: '🐨' },
     { name: '남극', min: 3000, x: 660, y: 700, emoji: '🐧' }
   ].map(Object.freeze));
-  const MARKER_WIDTH = 84;
-  const MARKER_HEIGHT = 48;
+  const MARKER_WIDTH = 60;
+  const MARKER_HEIGHT = 40;
   const MAP_PADDING = 8;
 
   function getJourney(value) {

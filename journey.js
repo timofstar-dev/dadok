@@ -33,13 +33,18 @@ const JourneyUI = (() => {
   function render(students, group) {
     roster = students;
     const changedGroup = group !== currentGroup; currentGroup = group;
-    let height = Math.max(780, 16 + 48 * Math.ceil(students.length / 14));
-    const reserved = JourneyModel.STOPS.map(stop => ({x:stop.x - 80, y:stop.y - 70, width:160, height:48}));
+    const {MARKER_WIDTH, MARKER_HEIGHT, MAP_PADDING} = JourneyModel;
+    const columns = Math.floor((1200 - 2 * MAP_PADDING) / MARKER_WIDTH);
+    let height = Math.max(780, 2 * MAP_PADDING + MARKER_HEIGHT * Math.ceil(students.length / columns));
+    const reserved = JourneyModel.STOPS.map(stop => {
+      const width = Math.max(96, stop.name.length * 19 + 32);
+      return {x:stop.x - width / 2, y:stop.y - 70, width, height:44};
+    });
     let placed;
     // Grow the canvas instead of omitting children when nameplates need more space.
     while (!placed) {
       try { placed = JourneyModel.layoutTravelers(students, 1200, height, reserved); }
-      catch (error) { if (!(error instanceof RangeError)) throw error; height += 48; }
+      catch (error) { if (!(error instanceof RangeError)) throw error; height += MARKER_HEIGHT; }
     }
     const map = $('mapZoomWrapper'); map.style.aspectRatio = `1200 / ${height}`;
     $('journeyOverlay').setAttribute('viewBox', `0 0 1200 ${height}`);

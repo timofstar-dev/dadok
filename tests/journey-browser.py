@@ -46,11 +46,12 @@ with sync_playwright() as p:
     assert page.locator('#expeditionCount').inner_text()=='37'
     page.locator('#dashboard-tab').screenshot(path='/tmp/dadok-expedition-desktop.png')
     page.locator('.journey-map').screenshot(path='/tmp/dadok-world-map.png')
+    page.locator('.journey-map').screenshot(path='/tmp/dadok-compact-map.png')
     # Every child has a reachable button, and their nameplates do not collide.
     boxes = page.locator('.traveler').evaluate_all('(els)=>els.map(e=>{let r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}})')
     for i,a in enumerate(boxes):
         for b in boxes[i+1:]:
-            assert abs(a['x']-b['x'])>=79 or abs(a['y']-b['y'])>=43
+            assert a['x']+a['w']<=b['x'] or b['x']+b['w']<=a['x'] or a['y']+a['h']<=b['y'] or b['y']+b['h']<=a['y']
     key = json.dumps(['1',classes[0],'바다1'],ensure_ascii=False,separators=(',',':'))
     page.evaluate('(key)=>JourneyUI.select(key)', key)
     assert '350' in page.locator('#detailRemaining').inner_text()
@@ -76,10 +77,23 @@ with sync_playwright() as p:
     page.set_viewport_size({'width':390,'height':844});page.screenshot(path='/tmp/dadok-expedition-mobile.png',full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'page must not overflow on mobile'
     assert page.locator('.traveler').count()==37
+    # A compact cluster keeps full three-character Korean names legible and separate.
+    page.set_viewport_size({'width':1440,'height':1150})
+    page.evaluate("""() => {studentDB={1:{오세아니아반:['가','나','다','라','마'].flatMap(prefix=>['하늘','바다','나래','다온','소담','지우'].map(name=>prefix+name))}};globalData=[];renderClassTable();}""")
+    assert page.locator('.traveler').count()==30
+    assert page.locator('.traveler-name').evaluate_all('(els)=>els.every(e=>e.scrollWidth<=e.clientWidth)'), 'three-character names must not be truncated'
+    label_boxes=page.locator('.traveler-name').evaluate_all('(els)=>els.map(e=>{let r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}})')
+    for i,a in enumerate(label_boxes):
+        for b in label_boxes[i+1:]:
+            assert a['x']+a['w']<=b['x'] or b['x']+b['w']<=a['x'] or a['y']+a['h']<=b['y'] or b['y']+b['h']<=a['y']
+    page.locator('.journey-map').screenshot(path='/tmp/dadok-compact-cluster.png')
     # Dense same-place roster, followed by a real threshold crossing and empty class.
     page.evaluate('''() => { studentDB={1:{오세아니아반:Array.from({length:240},(_,i)=>'친구'+i)}};globalData=[];renderClassTable(); }''')
     assert page.locator('.traveler').count()==240
-    assert page.locator('#mapZoomWrapper').evaluate('e=>e.offsetHeight')>=880
+    assert page.locator('#mapZoomWrapper').evaluate('e=>e.offsetHeight')==780
+    page.evaluate('''() => {studentDB={1:{오세아니아반:Array.from({length:500},(_,i)=>'친구'+i)}};renderClassTable();}''')
+    assert page.locator('.traveler').count()==500
+    assert page.locator('#mapZoomWrapper').evaluate('e=>e.offsetHeight')>780
     page.evaluate('''() => {globalData=[['2026-10-01','1','오세아니아반','친구0','새 책',30,'2점',700]];renderClassTable();}''')
     assert '유럽에 도착' in page.locator('#journeyStatus').inner_text()
     page.select_option('#dashClassSelect','유럽반');assert page.locator('.traveler').count()==0
@@ -94,4 +108,4 @@ with sync_playwright() as p:
     assert '불러오지 못' in error_page.locator('#journeyStatus').inner_text()
     browser.close()
 server.shutdown()
-print('PASS: 37 travelers, class filtering, grade identity, progress, stamps, keyboard, zoom, mobile, 240-child capacity, arrival and API error')
+print('PASS: 37 travelers, class filtering, grade identity, progress, stamps, keyboard, zoom, mobile, 240 compact/500 expanded capacity, arrival and API error')
