@@ -43,6 +43,18 @@ test('historical logs remain accessible when the source roster no longer include
   const roster=model.mergeRecordedRoster({},[['2026-10-01','12학년','이전반','가람']]);
   assert.deepEqual(roster,{12:{이전반:['가람']}});
 });
+test('an authoritative 41-student roster excludes two former students without altering raw records', () => {
+  const names=Array.from({length:41},(_,i)=>`가상친구${i}`);
+  const roster={1:{가상반:names}};
+  const logs=[...names,'이전친구A','이전친구B'].map(n=>['2026-10-01','1학년','가상반',n,'가상책',10,'2점',10]);
+  const before=JSON.stringify(logs);
+  const included=model.filterRoster(logs,roster);
+  assert.equal(included.length,41);
+  assert.equal(included.reduce((sum,r)=>sum+r[7],0),410);
+  assert.ok(included.every(r=>names.includes(r[3])));
+  assert.equal(JSON.stringify(logs),before);
+  assert.deepEqual(model.filterRoster(logs,{}),[]);
+});
 test('only a nonnegative numeric awarded step count confirms legacy or explicit success', () => {
   for(const response of [{steps:0},{steps:35},{success:true,steps:'35'},{status:'success',steps:35}]) assert.equal(typeof model.confirmedSteps(response),'number');
   for(const response of [null,{},'ok',{success:true},{steps:''},{steps:null},{steps:true},{steps:-1},{steps:Infinity},{steps:'abc'},{success:false,steps:10},{error:'rejected',steps:10},{status:'error',steps:0}]) assert.throws(()=>model.confirmedSteps(response));
