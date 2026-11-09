@@ -94,9 +94,13 @@ async function loadGlobalData() {
 function selectYear() {
   if (!journeyDataReady) return;
   selectedYear = Number($('yearFilter').value);
-  globalData = SchoolModel.filterYear(allLogs, selectedYear, config);
+  const yearLogs = SchoolModel.filterYear(allLogs, selectedYear, config);
   const roster = SchoolModel.rosterForYear(baseStudentDB, selectedYear, config);
-  studentDB = SchoolModel.mergeRecordedRoster(roster, globalData);
+  // An available official roster is authoritative, including an explicitly empty one.
+  // Only older years without a roster may reconstruct their historical membership.
+  const hasOfficialRoster = selectedYear >= Number(config.rosterYear) || Object.hasOwn(config.rostersByYear || {}, selectedYear);
+  studentDB = hasOfficialRoster ? roster : SchoolModel.mergeRecordedRoster({}, yearLogs);
+  globalData = SchoolModel.filterRoster(yearLogs, studentDB);
   $('yearPeriod').textContent = `${selectedYear}-03-01 ~ ${selectedYear + 1}-02-${new Date(Date.UTC(selectedYear + 1, 2, 0)).getUTCDate()} · 이 기간의 기록만 집계합니다.`;
   const names = classNames(studentDB);
   options('classFilter', names);

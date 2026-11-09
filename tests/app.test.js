@@ -22,7 +22,7 @@ async function app(t, post, options={}) {
     if(url.includes('action=getFullData')){
       reads++;
       if(options.failRefresh && reads>1) throw new Error('offline');
-      return reply({logs:[['2026-10-01','7','바뀐반','가람','올해 책',10,'2점',30],['2025-10-01','6','옛반','가람','지난해 책',10,'2점',900],['2027-01-01','7','바뀐반','가람','겨울 책',10,'2점',20]],allRequiredBooks:{}});
+      return reply({logs:[['2026-10-01','7','바뀐반','가람','올해 책',10,'2점',30],['2025-10-01','6','옛반','가람','지난해 책',10,'2점',900],['2027-01-01','7','바뀐반','가람','겨울 책',10,'2점',20],['2026-10-01','7','바뀐반','명단에서 제외된 친구','과거 입력',10,'2점',9999]],allRequiredBooks:{}});
     }
     throw new Error(`Unexpected request ${url}`);
   };
@@ -42,6 +42,9 @@ test('class selection comes from the roster and every view separates school year
   assert.equal(a.$('studentSelect').disabled,false);
   a.$('yearFilter').value='2026';a.w.selectYear();
   assert.match(a.$('allTop3').textContent,/50걸음/);
+  assert.equal(a.$('expeditionCount').textContent,'1');
+  assert.equal(a.$('locateTraveler').options.length,2);
+  for(const id of ['allTop3','classTop3','monthTop3','monthlyClassSteps','classTableBody','locateTraveler']) assert.doesNotMatch(a.$(id).textContent,/명단에서 제외된 친구/);
   assert.doesNotMatch(a.$('classTableBody').textContent,/지난해 책/);
   a.$('yearFilter').value='2025';a.w.selectYear();
   assert.match(a.$('allTop3').textContent,/900걸음/);

@@ -61,11 +61,20 @@
     }
     return result;
   }
+  function filterRoster(logs, roster) {
+    const members = new Set();
+    for (const [grade, groups] of Object.entries(roster)) {
+      for (const [className, names] of Object.entries(groups || {})) {
+        for (const name of names) members.add(JSON.stringify([gradeNumber(grade), className, name]));
+      }
+    }
+    return logs.filter(r => members.has(JSON.stringify([gradeNumber(r[1]), r[2], r[3]])));
+  }
   function confirmedSteps(res) {
     if (!res || typeof res !== 'object' || res.error || res.errors?.length || res.success === false || res.ok === false || (res.status && !['success','ok'].includes(String(res.status).toLowerCase()))) throw new Error('SAVE_REJECTED');
     // Support the existing Apps Script {steps:number} response as well as explicit success.
     if (!['number','string'].includes(typeof res.steps) || String(res.steps).trim() === '' || !Number.isFinite(Number(res.steps)) || Number(res.steps) < 0) throw new Error('SAVE_UNCONFIRMED');
     return Number(res.steps);
   }
-  return {gradeNumber, dateParts, schoolYear, filterYear, rosterForYear, mergeRecordedRoster, confirmedSteps};
+  return {gradeNumber, dateParts, schoolYear, filterYear, rosterForYear, mergeRecordedRoster, filterRoster, confirmedSteps};
 });
