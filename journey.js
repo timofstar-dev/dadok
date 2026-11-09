@@ -1,7 +1,7 @@
 /* Shared expedition view. No production writes or additional service dependencies. */
 const JourneyUI = (() => {
   const colors = ['#d47839', '#408877', '#b56a85', '#557ead', '#8c77ae', '#9a8737'];
-  const classes = ['오세아니아반', '아시아반', '아프리카반', '아메리카반', '유럽반', '아틀랜틱반'];
+  let classes = [];
   let roster = [], selectedKey = null, currentGroup = '', previousSteps = new Map();
   const $ = id => document.getElementById(id);
   const gradeNumber = value => String(value ?? '').trim().replace(/학년$/, '').trim();
@@ -33,6 +33,11 @@ const JourneyUI = (() => {
   function render(students, group) {
     roster = students;
     const changedGroup = group !== currentGroup; currentGroup = group;
+    if (changedGroup) previousSteps = new Map();
+    classes = [...new Set(students.map(s => s.c))].sort((a,b)=>a.localeCompare(b,'ko'));
+    students.forEach(s => { s.color = colors[classes.indexOf(s.c) % colors.length]; });
+    const picker = $('locateTraveler');
+    picker.replaceChildren(new Option('탐험가 선택', ''), ...students.map(s => new Option(`${s.n} · ${s.g}학년 ${s.c} · ${s.steps.toLocaleString()}걸음`, s.key)));
     const {MARKER_WIDTH, MARKER_HEIGHT, MAP_PADDING} = JourneyModel;
     const columns = Math.floor((1200 - 2 * MAP_PADDING) / MARKER_WIDTH);
     let height = Math.max(780, 2 * MAP_PADDING + MARKER_HEIGHT * Math.ceil(students.length / columns));
@@ -61,10 +66,11 @@ const JourneyUI = (() => {
     });
     const legend = $('journeyClassLegend'); legend.replaceChildren();
     classes.filter(c => students.some(s => s.c === c)).forEach(c => {
-      const item = document.createElement('span'); item.style.setProperty('--class-color', colors[classes.indexOf(c)]);
+      const item = document.createElement('span'); item.style.setProperty('--class-color', colors[classes.indexOf(c) % colors.length]);
       const dot = document.createElement('i'); item.append(dot, document.createTextNode(c)); legend.append(item);
     });
     const layer = $('markerLayer'); const old = new Map([...layer.children].map(el => [el.dataset.key, el]));
+    const positions = $('journeyPositions'); positions.replaceChildren();
     const retained = new Set(); const arrivals = [];
     placed.forEach(s => {
       retained.add(s.key);
@@ -78,9 +84,15 @@ const JourneyUI = (() => {
       }
       const label = marker.querySelector('.traveler-name'); label.textContent = s.n;
       marker.style.setProperty('--class-color', s.color);
+      const dot = svg('circle', {cx:s.x,cy:s.y,r:4.5,fill:s.color,class:'route-student-dot'});
+      positions.append(dot);
       marker.classList.toggle('no-travel-motion', changedGroup);
       marker.style.left = `${s.displayX / 12}%`; marker.style.top = `${s.displayY / height * 100}%`;
       marker.title = `${s.g}학년 ${s.c} · ${s.n} · ${s.steps.toLocaleString()}걸음`;
+      marker.onmouseenter = () => preview(s.key);
+      marker.onmouseleave = () => updateDetail();
+      marker.onfocus = () => preview(s.key);
+      marker.onblur = () => updateDetail();
       marker.setAttribute('aria-label', `${marker.title} · ${s.journey.current.name}${s.journey.next ? '에서 ' + s.journey.next.name + '(으)로 여행 중' : ' 세계 일주 완료'}`);
       const previous = previousSteps.get(s.key);
       if (previous !== undefined && s.steps > previous && JourneyModel.getJourney(previous).current.min < s.journey.current.min) {
@@ -93,7 +105,7 @@ const JourneyUI = (() => {
     });
     for (const [key, el] of old) if (!retained.has(key)) el.remove();
     if (!retained.has(selectedKey)) selectedKey = null;
-    $('journeyStatus').textContent = arrivals.length ? arrivals.join(' ') : students.length ? `${group === '전체' ? '전교생' : group} ${students.length}명의 탐험가가 함께 여행하고 있어요. 친구를 누르면 정확한 여행 위치와 다음 목적지를 볼 수 있어요.` : '이 반에는 아직 등록된 탐험가가 없어요.';
+    $('journeyStatus').textContent = arrivals.length ? arrivals.join(' ') : students.length ? `${students.length}명의 탐험가가 함께 여행하고 있어요. 작은 점은 실제 위치, 이름표는 겹치지 않게 펼친 자리예요. 이름표를 선택하면 연결선을 볼 수 있어요.` : '이 학년도·반에는 아직 등록된 탐험가가 없어요.';
     $('closeJourney').onclick = closeDetail;
     updateDetail();
   }
@@ -103,10 +115,25 @@ const JourneyUI = (() => {
   }
   function select(key, reveal = false) {
     selectedKey = key; updateDetail();
-    if (reveal) $('journeyDetail').scrollIntoView({block:'nearest', behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+    if (reveal) {
+      $('journeyDetail').scrollIntoView({block:'nearest', behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+      $('closeJourney').focus({preventScroll:true});
+    }
+  }
+  function preview(key) {
+    const student = roster.find(s => s.key === key);
+    if (student) drawPosition(student);
+  }
+  function drawPosition(student) {
+    const j = student.journey, leaders = $('journeyLeaders'); leaders.replaceChildren();
+    leaders.append(svg('path', {d:`M${student.displayX},${student.displayY} L${j.x},${j.y}`, class:'traveler-tether'}));
+    leaders.append(svg('circle', {cx:j.x, cy:j.y, r:10, class:'traveler-position'}));
+    const left = j.x > 940;
+    leaders.append(svg('text', {x:j.x+(left?-16:16),y:j.y+22,'text-anchor':left?'end':'start',class:'actual-location'}, `${student.n} · ${j.steps.toLocaleString()}걸음`));
   }
   function updateDetail() {
     const student = roster.find(s => s.key === selectedKey);
+    $('locateTraveler').value = student?.key || '';
     for (const marker of $('markerLayer').children) { const active = marker.dataset.key === selectedKey; marker.classList.toggle('is-selected', active); marker.setAttribute('aria-pressed', String(active)); }
     $('journeyDetail').hidden = !student;
     $('journeyLeaders').replaceChildren(); $('journeyHighlight').setAttribute('d', '');
@@ -118,10 +145,7 @@ const JourneyUI = (() => {
     $('detailProgress').value = j.complete ? 100 : j.segmentProgress * 100;
     $('detailRemaining').textContent = `${j.steps.toLocaleString()}걸음 걸었어요 · ${j.next ? j.next.name + '까지 ' + j.remaining.toLocaleString() + '걸음 남았어요!' : '세계 일주 성공!'}`;
     $('journeyHighlight').setAttribute('d', route([...j.visited, {x:j.x,y:j.y}]));
-    const leaders = $('journeyLeaders');
-    leaders.append(svg('path', {d:`M${student.displayX},${student.displayY} L${j.x},${j.y}`, class:'traveler-tether'}));
-    leaders.append(svg('circle', {cx:j.x, cy:j.y, r:11, class:'traveler-position'}));
-    leaders.append(svg('text', {x:j.x+16,y:j.y+5,class:'actual-location'}, '현재 여행 위치'));
+    drawPosition(student);
     const stamps = $('journeyPassport'); stamps.replaceChildren();
     JourneyModel.STOPS.forEach(stop => {
       const earned = j.steps >= stop.min; const stamp = document.createElement('div'); stamp.className = `journey-stamp${earned ? ' earned' : ''}`;
@@ -132,5 +156,7 @@ const JourneyUI = (() => {
     });
     $('journeyBooks').onclick = () => { showStudentProfile(student); $('dashProfile').scrollIntoView({block:'nearest'}); };
   }
-  return {getStudents, render, select};
+  function clearSelection() { selectedKey = null; previousSteps = new Map(); }
+  function selectedPosition() { const s = roster.find(s => s.key === selectedKey); return s ? {x:s.x,y:s.y} : null; }
+  return {getStudents, render, select, clearSelection, selectedPosition};
 })();

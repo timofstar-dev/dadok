@@ -31,6 +31,11 @@
       </ul>
     </div>
 
+    <section class="year-bar" aria-label="조회 학년도">
+      <label for="yearFilter">조회 학년도</label>
+      <select id="yearFilter" onchange="selectYear()" aria-describedby="yearPeriod"></select>
+      <p id="yearPeriod">학년도별 기록을 불러오고 있어요.</p>
+    </section>
     <!-- 탭 1: 기록하기 -->
     <div id="form-tab" class="tab-content is-active-content">
       <h2 class="title is-4 has-text-centered mb-5" style="color: #0369a1;">🗺️ 다독다독 세계여행 비행 기록</h2>
@@ -65,6 +70,7 @@
         </div>
       </details>
       <p id="bookAppliedStatus" class="book-applied-status" role="status" aria-live="polite"></p>
+      <p id="saveStatus" role="status" aria-live="polite"></p>
       <form id="readingForm">
         <div class="columns is-multiline">
           <div class="column is-12"><label class="label">책 읽은 날짜</label><input class="input" type="date" name="recordDate" id="recordDateInput" required></div>
@@ -72,7 +78,7 @@
           <div class="column is-6"><label class="label">나의 반</label><div class="select is-fullwidth"><select name="className" id="classSelect" onchange="updateStudentList()" required disabled><option value="">반 선택</option></select></div></div>
           <div class="column is-12"><label class="label">탐험가 이름</label><div class="select is-fullwidth"><select name="studentName" id="studentSelect" required disabled><option value="">이름을 선택하세요</option></select></div></div>
           <div class="column is-12"><label class="label" for="bookTitleInput">읽은 책 제목 <span class="has-text-grey is-size-7 ml-2">(예: 어린왕자(생텍쥐페리))</span></label><input class="input" type="text" name="bookTitle" id="bookTitleInput" placeholder="예: 어린왕자(생텍쥐페리)" required></div>
-          <div class="column is-6"><label class="label" for="pagesInput">읽은 페이지 수</label><input class="input" type="number" name="pages" id="pagesInput" placeholder="예: 50" required></div>
+          <div class="column is-6"><label class="label" for="pagesInput">읽은 페이지 수</label><input class="input" type="number" name="pages" id="pagesInput" min="1" step="1" placeholder="예: 50" required></div>
           <div class="column is-6">
             <label class="label">독서노트 점수</label>
             <div class="select is-fullwidth">
@@ -89,7 +95,7 @@
     <!-- 탭 2: 리더보드 -->
     <div id="leaderboard-tab" class="tab-content">
       <div class="columns is-multiline">
-        <div class="column is-6"><div class="box"><h3 class="box-title">🌍 전체 리더보드 Top 3</h3><div id="allTop3"></div></div></div>
+        <div class="column is-6"><div class="box"><h3 class="box-title">🌍 선택 학년도 리더보드 Top 3</h3><div id="allTop3"></div></div></div>
         <div class="column is-6"><div class="box"><h3 class="box-title">🏫 반별 리더보드</h3><div class="select is-small mb-3"><select id="classFilter" onchange="renderAllTimeLeaderboard()"><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div><div id="classTop3"></div></div></div>
       </div>
       
@@ -123,14 +129,15 @@
         <div class="expedition-note"><span aria-hidden="true">🧭</span><p>우리 모두의 속도로,<br><b>함께 떠나는 여행</b></p></div>
       </section>
       <section class="map-container-wrapper journey-map" aria-label="친구들의 세계여행 지도">
-        <div class="atlas-toolbar"><div><span class="atlas-dot"></span><strong>우리들의 여행 지도</strong><span class="atlas-subtitle">7개의 대륙, 끝없는 이야기</span></div><div class="zoom-controls"><button type="button" onclick="changeZoom(-0.2)" aria-label="지도 축소">−</button><output id="zoomLevel" aria-live="polite">100%</output><button type="button" onclick="changeZoom(0.2)" aria-label="지도 확대">＋</button><button type="button" onclick="resetZoom()" aria-label="지도 확대 초기화">↺</button></div></div>
-        <p class="map-help">친구를 눌러 여행 이야기를 만나 보세요. <span>작은 화면에서는 지도를 옆으로 밀어 볼 수 있어요.</span></p>
+        <div class="atlas-toolbar"><div><span class="atlas-dot"></span><strong>우리들의 여행 지도</strong><span class="atlas-subtitle">7개의 대륙, 끝없는 이야기</span></div><div class="zoom-controls"><button type="button" onclick="changeZoom(-0.2)" aria-label="지도 축소">−</button><output id="zoomLevel" aria-live="polite">100%</output><button type="button" onclick="changeZoom(0.2)" aria-label="지도 확대">＋</button><button type="button" onclick="resetZoom()" aria-label="전체 지도 보기">↺</button></div></div>
+        <div class="map-search"><label for="locateTraveler">이름으로 위치 찾기</label><select id="locateTraveler" onchange="JourneyUI.select(this.value)"><option value="">탐험가 선택</option></select><button type="button" onclick="zoomForNames()">이름 크게 보기</button></div>
+        <p class="map-help">작은 점이 실제 여행 위치예요. 이름표를 누르면 연결선과 남은 걸음을 볼 수 있어요. <span>100%는 전체 지도 보기입니다. 확대하면 지도를 밀어 이동할 수 있어요.</span></p>
         <div class="map-viewport" tabindex="0" aria-label="세계 지도. 방향키나 스크롤로 이동할 수 있습니다."><div id="mapZoomWrapper" class="map-zoom-wrapper">
           <img class="atlas-art" src="images/travel-world.svg" alt="산과 숲, 랜드마크가 있는 일곱 대륙의 그림 지도" draggable="false">
-          <svg id="journeyOverlay" class="journey-overlay" viewBox="0 0 1200 780" aria-hidden="true"><path id="journeyRoute"/><path id="journeyHighlight"/><g id="journeyLeaders"></g><g id="journeyDestinations"></g></svg>
+          <svg id="journeyOverlay" class="journey-overlay" viewBox="0 0 1200 780" aria-hidden="true"><path id="journeyRoute"/><path id="journeyHighlight"/><g id="journeyPositions"></g><g id="journeyLeaders"></g><g id="journeyDestinations"></g></svg>
           <div id="markerLayer"></div>
         </div></div>
-        <div class="atlas-footer"><span><i class="route-key"></i> 책을 읽으며 나아가는 여행길</span><span>같은 위치의 친구들은 이름이 겹치지 않게 펼쳐 보여요</span></div>
+        <div class="atlas-footer"><span><i class="route-key"></i> 책을 읽으며 나아가는 여행길</span><span>이름표는 펼쳐 표시하고, 실제 위치는 경로 위의 점으로 표시해요</span></div>
         <div id="journeyClassLegend" class="class-legend" aria-label="반별 탐험가 색상"></div>
       </section>
       <p id="journeyStatus" class="journey-status" role="status">탐험대 정보를 불러오고 있어요.</p>
@@ -163,184 +170,7 @@
   <script src="book-helper.js"></script>
   <script src="journey-model.js"></script>
   <script src="journey.js"></script>
-  <script>
-    // 🚨 [필수] API_URL을 선생님의 구글 웹앱 주소로 반드시 변경하세요!
-    const API_URL = "https://script.google.com/macros/s/AKfycby6p6rz82mRayL_v6uUquzeeT31WZSSKKbsKGF07r9eFQe7ocrl-3gtNG7oMeWZA0xU/exec";
-    
-    let studentDB = {}; let globalData = []; let allRequiredBooks = {}; let journeyDataReady = false;
-    
-
-    const LOCATIONS = [ {min:3000, e:"🐧", n:"남극"}, {min:2300, e:"🐨", n:"오세아니아"}, {min:1800, e:"🦁", n:"아프리카"}, {min:1600, e:"🦜", n:"남아메리카"}, {min:900, e:"🗽", n:"북아메리카"}, {min:700, e:"🏰", n:"유럽"}, {min:0, e:"⛩️", n:"아시아"} ];
-    const classMap = { "1":["오세아니아반"], "2":["오세아니아반"], "3":["아시아반"], "4":["아시아반"], "5":["아프리카반"], "6":["아프리카반"], "7":["유럽반"], "8":["유럽반"], "9":["아메리카반"], "10":["아메리카반"], "11":["아틀랜틱반"], "12":["아틀랜틱반"] };
-
-    let currentZoom = 100;
-    function changeZoom(d) { currentZoom = Math.min(200, Math.max(100, currentZoom + (d * 100))); document.getElementById('mapZoomWrapper').style.width = (1200 * currentZoom / 100) + 'px'; document.getElementById('zoomLevel').textContent = currentZoom + '%'; }
-    function resetZoom() { currentZoom = 100; changeZoom(0); const viewport = document.querySelector('.map-viewport'); viewport.scrollTo({left:0, top:0}); }
-
-    function setTodayDate() {
-      const today = new Date(); const offset = today.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
-      const dateInput = document.getElementById('recordDateInput');
-      if(dateInput) dateInput.value = localISOTime;
-    }
-
-    function closeSuccessModal() {
-      document.getElementById('successModal').classList.remove('is-active');
-    }
-
-    window.onload = async () => { 
-      setTodayDate(); 
-      try { 
-        document.getElementById('errorBox').style.display = 'none';
-        studentDB = await fetch(API_URL + "?action=getStudentDB").then(r => { if (!r.ok) throw new Error('Student data unavailable'); return r.json(); });
-        await loadGlobalData();
-      } catch(e) { 
-        document.getElementById('errorBox').style.display = 'block';
-        document.getElementById('errorBox').innerText = "데이터 연결 오류! API URL이 정확한지 확인해주세요.";
-        document.getElementById('journeyStatus').textContent = '탐험대 정보를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.';
-      } 
-    };
-
-    async function loadGlobalData() {
-      const res = await fetch(API_URL + "?action=getFullData").then(r => { if (!r.ok) throw new Error("Reading data unavailable"); return r.json(); });
-      globalData = res.logs || []; 
-      allRequiredBooks = res.allRequiredBooks || {};
-      journeyDataReady = true;
-      
-      const mSelect = document.getElementById('monthFilter');
-      if(mSelect && mSelect.options.length === 0 && res.months) { 
-        res.months.forEach(m => { const opt = new Option(m, m); if(m === res.currentMonth) opt.selected = true; mSelect.add(opt); }); 
-      }
-      
-      renderAllTimeLeaderboard(); 
-      if(document.getElementById('monthFilter')) renderMonthlyLeaderboard();
-      if(document.getElementById('dashClassSelect').value) renderClassTable();
-    }
-
-    document.getElementById('readingForm').onsubmit = async function(e) {
-      e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.classList.add('is-loading');
-      const data = { date: this.recordDate.value, grade: this.grade.value, className: this.className.value, studentName: this.studentName.value, bookTitle: this.bookTitle.value, pages: this.pages.value, reviewNote: this.reviewNote.value };
-      try {
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(r => r.json());
-        btn.classList.remove('is-loading'); this.bookTitle.value = ""; this.pages.value = ""; setTodayDate();
-        
-        document.getElementById('acquiredSteps').innerText = res.steps;
-        document.getElementById('successModal').classList.add('is-active');
-        
-        await loadGlobalData();
-      } catch(e) { alert("저장 중 오류 발생"); btn.classList.remove('is-loading'); }
-    };
-
-    // Build the map and table from the same class + grade + name identity.
-    function renderClassTable() {
-      if (!journeyDataReady) return;
-      const cls = document.getElementById('dashClassSelect').value;
-      const tbody = document.getElementById('classTableBody');
-      document.getElementById('dashProfile').style.display = 'none';
-      const students = JourneyUI.getStudents(studentDB, globalData, cls);
-      JourneyUI.render(students, cls);
-      tbody.replaceChildren();
-      students.forEach((s, index) => {
-        const row = document.createElement('tr');
-        const values = [s.c, index + 1, s.n, s.steps.toLocaleString(), `${s.journey.current.emoji} ${s.journey.current.name}`, s.logs[0]?.[4] || '-', s.logs[0] ? new Date(s.logs[0][0]).toLocaleDateString() : '-'];
-        values.forEach((value, col) => {
-          const cell = document.createElement('td');
-          if (col === 2) { const button = document.createElement('button'); button.className = 'student-record-link'; button.textContent = value; button.onclick = () => { JourneyUI.select(s.key); showStudentProfile(s); }; cell.append(button); }
-          else cell.textContent = value;
-          row.append(cell);
-        });
-        const cell = document.createElement('td'), copy = document.createElement('button');
-        copy.className = 'button is-small is-outlined is-info'; copy.textContent = '복사'; copy.onclick = () => copySingleStudentList(s.logs); cell.append(copy); row.append(cell); tbody.append(row);
-      });
-      if (!students.length) { const row = tbody.insertRow(); const cell = row.insertCell(); cell.colSpan = 8; cell.textContent = '아직 등록된 탐험가가 없습니다.'; }
-      document.getElementById('classTableContainer').style.display = 'block';
-    }
-
-    let currentProfileLogs = [];
-    function showStudentProfile(student) {
-      document.getElementById('classTableContainer').style.display = 'none';
-      const view = document.getElementById('dashProfile');
-      const logs = student.logs; currentProfileLogs = logs;
-      const recent = logs[0];
-      document.getElementById('dName').textContent = `👋 ${student.n} 탐험가님`;
-      document.getElementById('dInfo').textContent = `${student.g}학년 | ${student.c}`;
-      document.getElementById('dSteps').textContent = student.steps.toLocaleString();
-      document.getElementById('dLoc').textContent = `${student.journey.current.emoji} ${student.journey.current.name}`;
-      document.getElementById('dRecentBook').textContent = recent ? recent[4] : '-';
-      document.getElementById('dRecentDate').textContent = recent ? new Date(recent[0]).toLocaleDateString() : '-';
-      const body = document.getElementById('dBookList'); body.replaceChildren();
-      logs.forEach(r => { const row = body.insertRow(); [new Date(r[0]).toLocaleDateString(), r[4], `${r[5]}p`, `+${r[7]}`].forEach(value => { row.insertCell().textContent = value; }); });
-      view.style.display = 'block';
-    }
-    function backToClassTable() { document.getElementById('dashProfile').style.display = 'none'; document.getElementById('classTableContainer').style.display = 'block'; }
-    async function copySingleStudentList(logs) {
-      const text = logs.map(r => { const d = new Date(r[0]); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${r[4]}`; }).join('\n');
-      if (!text) { alert('아직 독서 기록이 없어요.'); return; }
-      try { await navigator.clipboard.writeText(text); alert('복사되었습니다!'); } catch { alert('복사 권한을 확인해 주세요.'); }
-    }
-    function copyIndividualBookList() { return copySingleStudentList(currentProfileLogs); }
-
-    function updateClassList() { const g = document.getElementById('gradeSelect').value; const c = document.getElementById('classSelect'); c.innerHTML = '<option value="">반 선택</option>'; if(g && classMap[g]) { classMap[g].forEach(cls => c.innerHTML += `<option value="${cls}">${cls}</option>`); c.disabled = false; if(classMap[g].length===1) { c.selectedIndex=1; updateStudentList(); } } }
-    function updateStudentList() { const g = document.getElementById('gradeSelect').value, c = document.getElementById('classSelect').value, s = document.getElementById('studentSelect'); s.innerHTML = '<option value="">이름 선택</option>'; if(studentDB[g] && studentDB[g][c]) { studentDB[g][c].forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); s.disabled = false; } }
-    function openTab(e, t) { document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("is-active-content")); document.querySelectorAll(".tabs li").forEach(el => el.classList.remove("is-active")); document.getElementById(t).classList.add("is-active-content"); e.currentTarget.classList.add("is-active"); if(t === 'dashboard-tab') renderClassTable(); }
-    
-    function renderAllTimeLeaderboard() { 
-      if(!globalData || !globalData.length) return; 
-      const calcRank = list => { const stats = {}; list.forEach(r => stats[r[3]] = (stats[r[3]]||0)+r[7]); return Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,3); }; 
-      const htmlRank = list => list.map((u,i) => `<p><b>${i+1}위</b> ${u[0]} (${u[1]}걸음)</p>`).join('')||"기록 없음"; 
-      document.getElementById('allTop3').innerHTML = htmlRank(calcRank(globalData)); 
-      document.getElementById('classTop3').innerHTML = htmlRank(calcRank(globalData.filter(r => r[2] === document.getElementById('classFilter').value))); 
-    }
-
-    function renderMonthlyLeaderboard() { 
-      if(!globalData || !globalData.length) return; 
-      const monthStr = document.getElementById('monthFilter').value;
-      const mNum = parseInt(monthStr)-1; 
-      const monthLogs = globalData.filter(r => new Date(r[0]).getMonth() === mNum); 
-      const calcRank = list => { const stats = {}; list.forEach(r => stats[r[3]] = (stats[r[3]]||0)+r[7]); return Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,3); }; 
-      document.getElementById('monthTop3').innerHTML = (list => list.map((u,i) => `<p><b>${i+1}위</b> ${u[0]} (${u[1]}걸음)</p>`).join('')||"기록 없음")(calcRank(monthLogs)); 
-      
-      const bookReaders = new Set(), monthlyBooks = allRequiredBooks[monthStr]||{}; 
-      monthLogs.forEach(r => { 
-        const tgt = monthlyBooks[r[2]]; 
-        if(tgt) { 
-          const sBook = r[4].replace(/\s/g, ''); 
-          if(tgt.split(',').some(b => { let cln = b.replace(/\(.*\)/,'').trim().replace(/\s/g,''); return cln.length>=2 && sBook.includes(cln); })) bookReaders.add(r[3]); 
-        } 
-      }); 
-      document.getElementById('bookExplorers').innerHTML = [...bookReaders].map(n => `<span class="tag is-success is-light is-medium mr-1 mb-1">${n}</span>`).join('')||"없음"; 
-      
-      const classSteps = {};
-      monthLogs.forEach(r => {
-        const c = r[2], n = r[3], s = r[7];
-        if(!classSteps[c]) classSteps[c] = {};
-        classSteps[c][n] = (classSteps[c][n]||0) + s;
-      });
-      
-      const classNames = ["오세아니아반", "아시아반", "아프리카반", "아메리카반", "유럽반", "아틀랜틱반"];
-      let stepsHtml = '';
-      
-      classNames.forEach(c => {
-        let studentsInClass = [];
-        if(studentDB && typeof studentDB === 'object') {
-          for(let g in studentDB) {
-            if(studentDB[g][c] && Array.isArray(studentDB[g][c])) {
-              studentDB[g][c].forEach(n => { if(!studentsInClass.includes(n)) studentsInClass.push(n); });
-            }
-          }
-        }
-        if(studentsInClass.length === 0 && classSteps[c]) studentsInClass = Object.keys(classSteps[c]);
-        
-        if (studentsInClass.length > 0) {
-          const studentSteps = studentsInClass.map(n => ({ name: n, steps: (classSteps[c] && classSteps[c][n]) || 0 }));
-          studentSteps.sort((a,b) => b.steps !== a.steps ? b.steps - a.steps : a.name.localeCompare(b.name));
-          
-          const listHtml = studentSteps.map(s => s.steps >= 100 ? `<div class="mb-1"><strong>${s.name}(${s.steps}걸음)</strong></div>` : `<div class="mb-1">${s.name}(${s.steps}걸음)</div>`).join('');
-          stepsHtml += `<div class="column is-4"><div class="box p-3 has-background-white-bis" style="border: 1px solid #e2e8f0; border-radius: 8px;"><h4 class="title is-6 has-text-info mb-2 pb-1" style="border-bottom: 2px solid #bae6fd;">${c}</h4>${listHtml}</div></div>`;
-        }
-      });
-      document.getElementById('monthlyClassSteps').innerHTML = stepsHtml || "<p class='ml-3'>기록 없음</p>";
-    }
-  </script>
+  <script src="school-model.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

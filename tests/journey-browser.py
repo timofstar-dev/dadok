@@ -72,7 +72,7 @@ with sync_playwright() as p:
     assert page.locator('#journeyDetail').is_visible()
     page.click('#closeJourney');assert page.locator('#journeyDetail').is_hidden()
     page.get_by_role('button',name='지도 확대',exact=True).click();assert page.locator('#zoomLevel').inner_text()=='120%'
-    page.get_by_role('button',name='지도 확대 초기화').click();assert page.locator('#zoomLevel').inner_text()=='100%'
+    page.get_by_role('button',name='전체 지도 보기').click();assert page.locator('#zoomLevel').inner_text()=='100%'
     page.select_option('#dashClassSelect','전체')
     page.set_viewport_size({'width':390,'height':844});page.screenshot(path='/tmp/dadok-expedition-mobile.png',full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'page must not overflow on mobile'
