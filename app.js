@@ -194,32 +194,150 @@ async function copySingleStudentList(logs) {
 }
 function copyIndividualBookList(){return copySingleStudentList(currentProfileLogs);}
 
+// ---------- 독서 퀴즈 인증 ----------
+// 퀴즈가 있는 책은 퀴즈를 통과해야 기록되고, 없는 책은 독서록으로 기록되며 출제 요청이 쌓입니다.
+// 정답과 최종 판정은 Apps Script 서버에만 있습니다. 이 목록은 안내용이며 서버가 다시 확인합니다.
+let quizBooks = [], quizBooksLoaded = false, activeQuiz = null, quizLoading = false, quizSubmitting = false;
+async function loadQuizBooks() {
+  try {
+    const res = await readJSON(`${API_URL}?action=getQuizBooks`);
+    quizBooks = Array.isArray(res?.books) ? res.books : [];
+    quizBooksLoaded = true;
+  } catch { quizBooksLoaded = false; }
+  updateQuizHint();
+}
+function updateQuizHint() {
+  const hint = $('quizHint'), title = $('bookTitleInput').value.trim();
+  const book = QuizModel.findQuizBook(quizBooks, title);
+  hint.classList.toggle('is-quiz', Boolean(book));
+  if (book) hint.textContent = `🧩 퀴즈 인증 도서예요${book.level ? ` (${book.level}단계)` : ''}. 저장을 누르면 퀴즈 ${book.questionCount || 10}문제를 풀고, 60점 이상이면 기록돼요.`;
+  else if (quizBooksLoaded && QuizModel.normalizeTitle(title).length >= 2) hint.textContent = '아직 퀴즈가 없는 책이에요. 독서록으로 기록하면 선생님께 이 책의 퀴즈 출제를 요청해요.';
+  else hint.textContent = '';
+  hint.hidden = !hint.textContent;
+}
+function clearAfterSave() {
+  const form = $('readingForm');
+  form.elements.bookTitle.value=''; form.elements.pages.value=''; setTodayDate(); updateQuizHint();
+}
+function showSuccess(steps, detail) {
+  $('acquiredSteps').textContent = steps;
+  $('successDetail').textContent = detail || ''; $('successDetail').hidden = !detail;
+  $('successModal').classList.add('is-active');
+}
+async function refreshAfterSave() {
+  updateFormRoster();
+  try{await loadGlobalData();}catch{$('saveStatus').textContent='저장은 완료됐지만 목록을 새로 불러오지 못했습니다. 다시 저장하지 말고 새로고침해 주세요.';}
+}
+function renderQuiz(quiz) {
+  $('quizTitle').textContent = QuizModel.bookLabel(quiz.book);
+  $('quizIntro').textContent = `${quiz.questions.length}문제 중 ${quiz.passScore || 60}점 이상이면 인증돼요. 100점이면 걸음을 모두 받고, 10점 모자랄 때마다 2걸음씩 줄어요. 통과하지 못하면 1주일 뒤에 다시 도전할 수 있어요.`;
+  const list = $('quizQuestions'); list.replaceChildren();
+  quiz.questions.forEach((q, i) => {
+    const item = document.createElement('li'), set = document.createElement('fieldset'), legend = document.createElement('legend');
+    legend.textContent = q.text; set.append(legend);
+    q.choices.forEach(choice => {
+      const label = document.createElement('label'), input = document.createElement('input'), text = document.createElement('span');
+      label.className = 'quiz-choice'; input.type = 'radio'; input.name = `q${i}`; input.value = String(choice.value);
+      input.addEventListener('change', () => set.classList.remove('is-missing'));
+      text.textContent = choice.text; label.append(input, text); set.append(label);
+    });
+    item.append(set); list.append(item);
+  });
+  $('quizStatus').textContent = ''; $('quizStatus').classList.remove('is-fail');
+  $('quizSubmit').disabled = false; $('quizClose').textContent = '나중에 풀기';
+}
+async function openQuiz(bookId, data) {
+  if (quizLoading) return;
+  quizLoading = true; $('submitBtn').classList.add('is-loading');
+  $('saveStatus').textContent = '퀴즈를 불러오고 있어요.';
+  try {
+    const quiz = await readJSON(`${API_URL}?action=getQuiz&bookId=${encodeURIComponent(bookId)}`);
+    if (!quiz?.success || !quiz.book || !Array.isArray(quiz.questions) || !quiz.questions.length) throw new Error('QUIZ_UNAVAILABLE');
+    activeQuiz = {bookId: quiz.book.id, data, count: quiz.questions.length};
+    renderQuiz(quiz);
+    $('saveStatus').textContent = '퀴즈를 풀면 기록이 저장돼요.';
+    $('quizModal').classList.add('is-active'); $('quizTitle').focus();
+  } catch {
+    $('saveStatus').textContent = '퀴즈를 불러오지 못했어요. 입력 내용은 그대로 있으니 잠시 뒤 다시 저장을 눌러 주세요.';
+  } finally {
+    quizLoading = false; $('submitBtn').classList.remove('is-loading');
+  }
+}
+function closeQuiz() {
+  if (quizSubmitting) return;
+  $('quizModal').classList.remove('is-active'); activeQuiz = null; $('submitBtn').focus();
+}
+$('quizForm').onsubmit = async function(e) {
+  e.preventDefault(); if (!activeQuiz || quizSubmitting) return;
+  const answers = [], quiz = activeQuiz; let firstMissing = null;
+  for (let i = 0; i < quiz.count; i++) {
+    const checked = this.querySelector(`input[name="q${i}"]:checked`);
+    const set = this.querySelectorAll('fieldset')[i];
+    set.classList.toggle('is-missing', !checked);
+    if (!checked) firstMissing ||= set;
+    answers.push(checked ? Number(checked.value) : null);
+  }
+  if (firstMissing) { $('quizStatus').textContent = '아직 답하지 않은 문제가 있어요.'; firstMissing.querySelector('input').focus(); return; }
+  quizSubmitting = true; $('quizSubmit').classList.add('is-loading'); $('quizStatus').textContent = '채점하고 있어요.';
+  const inputs = [...this.querySelectorAll('input')]; inputs.forEach(el => el.disabled = true);
+  let res = null;
+  try {
+    const response = await fetch(API_URL, {method:'POST', body:JSON.stringify({...quiz.data, action:'submitQuiz', bookId:quiz.bookId, answers}), signal:AbortSignal.timeout(30000)});
+    if (!response.ok) throw new Error('QUIZ_REJECTED');
+    res = await response.json();
+  } catch { res = null; }
+  finally { quizSubmitting = false; $('quizSubmit').classList.remove('is-loading'); }
+
+  if (res?.success && res.passed === true && Number.isFinite(Number(res.steps))) {
+    closeQuiz(); clearAfterSave();
+    const detail = res.deduction ? `퀴즈 ${res.score}점 통과 (${res.correct}/${res.total}) · 퀴즈 감점 −${res.deduction}걸음` : `퀴즈 ${res.score}점 만점 통과! 감점 없이 모두 받았어요.`;
+    showSuccess(Number(res.steps), detail);
+    $('saveStatus').textContent = '퀴즈를 통과해서 기록을 저장했습니다.';
+    await refreshAfterSave();
+  } else if (res?.success && res.passed === false) {
+    const message = `${res.score}점 (${res.correct}/${res.total}문제)이에요. ${res.passScore || 60}점 이상이어야 인증돼요. 이번 기록은 저장되지 않았어요. ${res.retryDate}부터 다시 도전할 수 있어요.`;
+    $('quizStatus').textContent = message; $('quizStatus').classList.add('is-fail');
+    $('quizSubmit').disabled = true; $('quizClose').textContent = '닫기';
+    $('saveStatus').textContent = message;
+  } else {
+    $('quizStatus').textContent = QuizModel.errorMessage(res);
+    if (['ALREADY_CERTIFIED','RETRY_LOCKED','QUIZ_NOT_FOUND'].includes(res?.error)) { $('quizSubmit').disabled = true; $('quizClose').textContent = '닫기'; }
+    else inputs.forEach(el => el.disabled = false);
+  }
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeQuiz) closeQuiz(); });
+$('bookTitleInput').addEventListener('input', updateQuizHint);
+
 $('readingForm').onsubmit = async function(e) {
-  e.preventDefault(); if(saving || !config || !this.reportValidity()) return;
+  e.preventDefault(); if(saving || quizLoading || !config || !this.reportValidity()) return;
   const form=this, controls=[...form.elements], disabled=controls.map(el=>el.disabled);
   const data=Object.fromEntries(new FormData(form));
   data.date=data.recordDate; delete data.recordDate;
   if(!(inputRoster()[data.grade]?.[data.className] || []).includes(data.studentName)) { $('saveStatus').textContent='학년·반·이름을 다시 선택해 주세요.';return; }
+  const knownQuiz=QuizModel.findQuizBook(quizBooks,data.bookTitle);
+  if(knownQuiz) { await openQuiz(knownQuiz.id,data); return; }
   saving=true; controls.forEach(el=>el.disabled=true);$('submitBtn').classList.add('is-loading');$('saveStatus').textContent='기록을 저장하고 있어요.';
-  let saved=false;
+  let saved=false, quizRequired=null;
   try {
     const response=await fetch(API_URL,{method:'POST',body:JSON.stringify(data),signal:AbortSignal.timeout(30000)});
     if(!response.ok) throw new Error('SAVE_REJECTED');
-    const steps=SchoolModel.confirmedSteps(await response.json());
-    saved=true;
-    form.elements.bookTitle.value='';form.elements.pages.value='';setTodayDate();
-    $('acquiredSteps').textContent=steps;$('successModal').classList.add('is-active');
-    $('saveStatus').textContent='기록을 저장했습니다.';
+    const result=await response.json();
+    // 이 화면이 모르던 퀴즈 도서라면 서버가 저장하지 않고 퀴즈를 먼저 요구합니다.
+    if(result?.error==='QUIZ_REQUIRED' && result.bookId) quizRequired=result.bookId;
+    else {
+      const steps=SchoolModel.confirmedSteps(result);
+      saved=true;
+      clearAfterSave(); showSuccess(steps,'');
+      $('saveStatus').textContent=result.quizRequested ? '기록을 저장했습니다. 이 책의 퀴즈 출제를 선생님께 요청했어요.' : '기록을 저장했습니다.';
+    }
   } catch(error) {
     $('saveStatus').textContent='저장을 확인하지 못했습니다. 입력 내용은 보존했습니다. 독서 기록에서 저장 여부를 확인한 뒤 다시 시도해 주세요.';
   } finally {
     controls.forEach((el,i)=>el.disabled=disabled[i]);$('submitBtn').classList.remove('is-loading');
     saving=false;
   }
-  if(saved) {
-    updateFormRoster();
-    try{await loadGlobalData();}catch{$('saveStatus').textContent='저장은 완료됐지만 목록을 새로 불러오지 못했습니다. 다시 저장하지 말고 새로고침해 주세요.';}
-  }
+  if(quizRequired) { loadQuizBooks(); await openQuiz(quizRequired,data); return; }
+  if(saved) await refreshAfterSave();
 };
 window.onload = async () => {
   setTodayDate();$('submitBtn').disabled=true;
@@ -230,7 +348,7 @@ window.onload = async () => {
     baseStudentDB=db.students || db;
     if(db.students && Number.isInteger(db.rosterYear)) config.rosterYear=db.rosterYear;
     if(db.rostersByYear) config.rostersByYear={...config.rostersByYear,...db.rostersByYear};
-    updateFormRoster(); await loadGlobalData();$('submitBtn').disabled=false;
+    updateFormRoster(); await Promise.all([loadGlobalData(), loadQuizBooks()]);$('submitBtn').disabled=false;
     $('recordDateInput').addEventListener('change',updateFormRoster);
   } catch {
     $('errorBox').style.display='block';$('errorBox').textContent='데이터를 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.';

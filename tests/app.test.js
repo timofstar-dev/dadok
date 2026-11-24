@@ -26,7 +26,7 @@ async function app(t, post, options={}) {
     }
     throw new Error(`Unexpected request ${url}`);
   };
-  for(const file of ['journey-model.js','journey.js','school-model.js','app.js']) {const script=w.document.createElement('script');script.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(script);}
+  for(const file of ['journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']) {const script=w.document.createElement('script');script.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(script);}
   const init=w.onload;w.onload=null;await init();
   w.document.getElementById('recordDateInput').value='2026-11-09';w.updateFormRoster();
   w.document.getElementById('gradeSelect').value='7';w.updateClassList();
