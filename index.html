@@ -81,10 +81,10 @@
           <div class="column is-12"><label class="label" for="bookTitleInput">읽은 책 제목 <span class="has-text-grey-dark is-size-7 ml-2">(예: 어린왕자(생텍쥐페리))</span></label><input class="input" type="text" name="bookTitle" id="bookTitleInput" placeholder="예: 어린왕자(생텍쥐페리)" required></div>
           <div class="column is-6"><label class="label" for="pagesInput">읽은 페이지 수</label><input class="input" type="number" name="pages" id="pagesInput" min="1" step="1" placeholder="예: 50" required></div>
           <div class="column is-6">
-            <label class="label" for="reviewNoteSelect">독서노트 점수</label>
+            <label class="label" for="reviewNoteSelect">독서록 분량</label>
             <div class="select is-fullwidth">
               <select name="reviewNote" id="reviewNoteSelect" required>
-                <option value="2점">기본 (2점)</option><option value="3점">좋음 (3점)</option><option value="5점">매우 좋음 (5점)</option><option value="7점">우수 (7점)</option><option value="10점">이달의 책 탐험 성공 (10점)</option><option value="0점">기록 없음 (0점)</option>
+                <option value="0점">목록만 작성 (0점)</option><option value="2점" selected>목록 + 간단한 소감 (2점)</option><option value="3점">반 쪽 소감문 (3점)</option><option value="5점">한 쪽 소감문 (5점)</option><option value="7점">두 쪽 소감문 (7점)</option><option value="10점">이달의 책 활동지 (10점)</option>
               </select>
             </div>
           </div>
