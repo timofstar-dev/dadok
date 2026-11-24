@@ -1,0 +1,27 @@
+/* Reading quiz: hint under the title field, the quiz dialog and the result line. */
+.quiz-hint{font-size:13px;line-height:1.6;margin-top:6px;padding:7px 11px;border-radius:8px;background:#eef6fb;color:#2f5b70}
+.quiz-hint.is-quiz{background:#fff6e0;color:#6b4a07}
+.quiz-hint[hidden]{display:none}
+.quiz-modal .modal-card{width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 40px);border-radius:16px}
+.quiz-modal .modal-card-head{align-items:flex-start;gap:12px;background:#f3f9fc;border-bottom:1px solid #dcebf2}
+.quiz-modal .modal-card-head>div{flex:1;min-width:0}
+.quiz-modal .modal-card-title{font-size:20px;font-weight:800;color:#1d5873;line-height:1.4;overflow-wrap:anywhere}
+.quiz-modal .modal-card-title:focus{outline:none}
+.quiz-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#4a7486;margin-bottom:2px}
+.quiz-intro{font-size:14px;color:#3f5b68;line-height:1.7;margin-bottom:16px}
+.quiz-questions{list-style:none;margin:0;padding:0;counter-reset:quiz}
+.quiz-questions>li{counter-increment:quiz;margin-bottom:14px}
+.quiz-questions fieldset{border:1px solid #dbe6ea;border-radius:12px;padding:14px 16px;margin:0}
+.quiz-questions legend{font-weight:700;color:#24485a;line-height:1.6;padding:0 4px}
+.quiz-questions legend:before{content:counter(quiz) '. ';color:#1d79a0}
+.quiz-choice{display:flex;align-items:flex-start;gap:9px;padding:8px 6px;border-radius:8px;cursor:pointer;color:#34525f;line-height:1.5}
+.quiz-choice:hover{background:#f2f8fb}
+.quiz-choice input{margin-top:4px;flex:0 0 auto;accent-color:#1d79a0}
+.quiz-choice input:focus-visible{outline:3px solid #d49e40;outline-offset:2px}
+.quiz-questions fieldset.is-missing{border-color:#c5653f;background:#fff8f4}
+.quiz-status{font-size:14px;line-height:1.7;margin-top:6px;color:#365e70}
+.quiz-status:empty{display:none}
+.quiz-status.is-fail{padding:12px 14px;border-radius:10px;background:#fff4ec;color:#7a3a17}
+.quiz-modal .modal-card-foot{gap:8px;justify-content:flex-end;background:#fbfdfe}
+.success-detail{font-size:14px;color:#4b5c66;line-height:1.7;margin:-10px 0 22px}
+@media(max-width:600px){.quiz-modal .modal-card{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.quiz-modal .modal-card-body{padding:16px}.quiz-modal .modal-card-foot .button{flex:1}}
