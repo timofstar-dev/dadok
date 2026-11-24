@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <title>다독다독 세계여행</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="다독다독 세계여행: 책을 읽은 만큼 걸음을 모아 친구들과 함께 세계 일주를 떠나는 학교 독서 기록 프로그램입니다.">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
     body { background-color: #f0f9ff; padding: 15px; font-family: 'Apple SD Gothic Neo', sans-serif; }
@@ -22,7 +23,7 @@
   <link rel="stylesheet" href="book-helper.css">
 </head>
 <body>
-  <div class="container is-max-desktop">
+  <main class="container is-max-desktop">
     <div class="tabs is-boxed is-centered mb-0 is-toggle">
       <ul>
         <li id="tab-form" class="is-active" onclick="openTab(event, 'form-tab')"><a>📝 기록하기</a></li>
@@ -73,16 +74,16 @@
       <p id="saveStatus" role="status" aria-live="polite"></p>
       <form id="readingForm">
         <div class="columns is-multiline">
-          <div class="column is-12"><label class="label">책 읽은 날짜</label><input class="input" type="date" name="recordDate" id="recordDateInput" required></div>
-          <div class="column is-6"><label class="label">학년</label><div class="select is-fullwidth"><select name="grade" id="gradeSelect" onchange="updateClassList()" required><option value="">학년 선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option><option value="7">7학년</option><option value="8">8학년</option><option value="9">9학년</option><option value="10">10학년</option><option value="11">11학년</option><option value="12">12학년</option></select></div></div>
-          <div class="column is-6"><label class="label">나의 반</label><div class="select is-fullwidth"><select name="className" id="classSelect" onchange="updateStudentList()" required disabled><option value="">반 선택</option></select></div></div>
-          <div class="column is-12"><label class="label">탐험가 이름</label><div class="select is-fullwidth"><select name="studentName" id="studentSelect" required disabled><option value="">이름을 선택하세요</option></select></div></div>
-          <div class="column is-12"><label class="label" for="bookTitleInput">읽은 책 제목 <span class="has-text-grey is-size-7 ml-2">(예: 어린왕자(생텍쥐페리))</span></label><input class="input" type="text" name="bookTitle" id="bookTitleInput" placeholder="예: 어린왕자(생텍쥐페리)" required></div>
+          <div class="column is-12"><label class="label" for="recordDateInput">책 읽은 날짜</label><input class="input" type="date" name="recordDate" id="recordDateInput" required></div>
+          <div class="column is-6"><label class="label" for="gradeSelect">학년</label><div class="select is-fullwidth"><select name="grade" id="gradeSelect" onchange="updateClassList()" required><option value="">학년 선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option><option value="7">7학년</option><option value="8">8학년</option><option value="9">9학년</option><option value="10">10학년</option><option value="11">11학년</option><option value="12">12학년</option></select></div></div>
+          <div class="column is-6"><label class="label" for="classSelect">나의 반</label><div class="select is-fullwidth"><select name="className" id="classSelect" onchange="updateStudentList()" required disabled><option value="">반 선택</option></select></div></div>
+          <div class="column is-12"><label class="label" for="studentSelect">탐험가 이름</label><div class="select is-fullwidth"><select name="studentName" id="studentSelect" required disabled><option value="">이름을 선택하세요</option></select></div></div>
+          <div class="column is-12"><label class="label" for="bookTitleInput">읽은 책 제목 <span class="has-text-grey-dark is-size-7 ml-2">(예: 어린왕자(생텍쥐페리))</span></label><input class="input" type="text" name="bookTitle" id="bookTitleInput" placeholder="예: 어린왕자(생텍쥐페리)" required></div>
           <div class="column is-6"><label class="label" for="pagesInput">읽은 페이지 수</label><input class="input" type="number" name="pages" id="pagesInput" min="1" step="1" placeholder="예: 50" required></div>
           <div class="column is-6">
-            <label class="label">독서노트 점수</label>
+            <label class="label" for="reviewNoteSelect">독서노트 점수</label>
             <div class="select is-fullwidth">
-              <select name="reviewNote" required>
+              <select name="reviewNote" id="reviewNoteSelect" required>
                 <option value="2점">기본 (2점)</option><option value="3점">좋음 (3점)</option><option value="5점">매우 좋음 (5점)</option><option value="7점">우수 (7점)</option><option value="10점">이달의 책 탐험 성공 (10점)</option><option value="0점">기록 없음 (0점)</option>
               </select>
             </div>
@@ -152,7 +153,7 @@
         <table class="table is-fullwidth is-striped custom-table"><thead><tr><th>날짜</th><th>제목</th><th>쪽수</th><th>걸음</th></tr></thead><tbody id="dBookList"></tbody></table>
       </div>
     </div>
-  </div>
+  </main>
 
   <div id="successModal" class="modal">
     <div class="modal-background" onclick="closeSuccessModal()"></div>
