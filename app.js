@@ -23,8 +23,13 @@ function options(id, values, placeholder) {
   if (values.includes(previous)) el.value = previous;
   else if (placeholder) el.value = '';
 }
+// 가장 낮은 학년이 있는 반부터: 오세아니아(1·2) → 아시아(3·4) → 아프리카(5·6) → 아메리카(7·8) → 유럽(9·10) → 아틀랜틱(11·12)
 function classNames(db) {
-  return [...new Set(Object.values(db).flatMap(groups => Object.keys(groups || {})))].sort((a,b) => a.localeCompare(b,'ko'));
+  const lowest = new Map();
+  for (const [grade, groups] of Object.entries(db)) {
+    for (const className of Object.keys(groups || {})) lowest.set(className, Math.min(lowest.get(className) ?? 99, SchoolModel.gradeNumber(grade) || 99));
+  }
+  return [...lowest.keys()].sort((a,b) => lowest.get(a) - lowest.get(b) || a.localeCompare(b,'ko'));
 }
 function inputRoster() {
   return config ? SchoolModel.rosterForYear(baseStudentDB, SchoolModel.schoolYear($('recordDateInput').value, config), config) : {};

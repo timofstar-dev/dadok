@@ -5,6 +5,13 @@ const JourneyUI = (() => {
   let roster = [], selectedKey = null, currentGroup = '', previousSteps = new Map();
   const $ = id => document.getElementById(id);
   const gradeNumber = value => String(value ?? '').trim().replace(/학년$/, '').trim();
+  // 반은 가장 낮은 학년 순서(오세아니아 1·2학년 → 아시아 → 아프리카 → 아메리카 → 유럽 → 아틀랜틱 11·12학년)로,
+  // 같은 반 안에서는 학년, 이름 순서로 보여 줍니다. 반 이름이 바뀌어도 명부의 학년으로 정해집니다.
+  function byClassGrade(items) {
+    const lowest = new Map();
+    items.forEach(s => lowest.set(s.c, Math.min(lowest.get(s.c) ?? 99, Number(s.g) || 99)));
+    return (a, b) => lowest.get(a.c) - lowest.get(b.c) || a.c.localeCompare(b.c, 'ko') || (Number(a.g) || 99) - (Number(b.g) || 99) || a.n.localeCompare(b.n, 'ko');
+  }
   function getStudents(db, logs, group) {
     const result = new Map();
     for (const [grade, groups] of Object.entries(db || {})) {
@@ -21,7 +28,8 @@ const JourneyUI = (() => {
         }
       }
     }
-    return [...result.values()].sort((a, b) => a.c.localeCompare(b.c, 'ko') || a.n.localeCompare(b.n, 'ko') || a.g.localeCompare(b.g));
+    const list = [...result.values()];
+    return list.sort(byClassGrade(list));
   }
   function svg(tag, attributes, text) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -34,7 +42,7 @@ const JourneyUI = (() => {
     roster = students;
     const changedGroup = group !== currentGroup; currentGroup = group;
     if (changedGroup) previousSteps = new Map();
-    classes = [...new Set(students.map(s => s.c))].sort((a,b)=>a.localeCompare(b,'ko'));
+    classes = [...new Set([...students].sort(byClassGrade(students)).map(s => s.c))];
     students.forEach(s => { s.color = colors[classes.indexOf(s.c) % colors.length]; });
     const picker = $('locateTraveler');
     picker.replaceChildren(new Option('탐험가 선택', ''), ...students.map(s => new Option(`${s.n} · ${s.g}학년 ${s.c} · ${s.steps.toLocaleString()}걸음`, s.key)));
