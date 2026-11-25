@@ -24,7 +24,7 @@ test('dashboards list classes from the youngest grade to the oldest',async t=>{
     if(url.includes('action=getQuizBooks'))return reply({books:[]});
     throw new Error(url);
   };
-  for(const file of ['class-theme.js','journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']){const s=w.document.createElement('script');s.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(s);}
+  for(const file of ['class-theme.js','avatar.js','journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']){const s=w.document.createElement('script');s.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(s);}
   const init=w.onload;w.onload=null;await init();
   const $=id=>w.document.getElementById(id);
   $('yearFilter').value='2026';w.selectYear();

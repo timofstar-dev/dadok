@@ -28,7 +28,7 @@ async function app(t,{books=[BOOK],quiz=QUIZ,post}) {
     if(url.includes('action=getQuiz&'))return reply(quiz);
     throw new Error(`Unexpected request ${url}`);
   };
-  for(const file of ['class-theme.js','journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']) {const script=w.document.createElement('script');script.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(script);}
+  for(const file of ['class-theme.js','avatar.js','journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']) {const script=w.document.createElement('script');script.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(script);}
   const init=w.onload;w.onload=null;await init();
   const $=id=>w.document.getElementById(id);
   $('recordDateInput').value='2026-11-09';w.updateFormRoster();

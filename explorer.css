@@ -1,0 +1,51 @@
+/* 탐험가 캐릭터: 지도 위 탈것, 선택한 탐험가의 스포트라이트, 탈것 사다리, 캐릭터 만들기 */
+.traveler .traveler-avatar{width:32px;height:24px;filter:drop-shadow(0 1px 1px rgba(23,42,87,.35))}
+.traveler .traveler-name{height:16px;line-height:12px}
+.traveler.is-selected::before{content:"";position:absolute;left:50%;top:12px;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(232,185,49,.35);box-shadow:0 0 0 2px var(--sein-gold);z-index:-1}
+.traveler.is-selected .traveler-name{background:var(--sein-navy);color:#fff;border-color:var(--sein-navy)}
+
+.explorer-make-button{background:var(--sein-gold);color:var(--sein-navy);border:0;font-family:var(--font-display);font-size:18px;border-radius:999px;padding:10px 20px;height:auto;min-height:44px}
+.explorer-make-button:hover{background:#F0C94F;color:var(--sein-navy)}
+.explorer-make-button:focus-visible{outline:3px solid var(--sein-navy);outline-offset:2px}
+
+.detail-top{gap:16px}
+.detail-portrait{flex:0 0 auto;width:84px;height:110px;margin-left:auto;margin-right:12px}
+.detail-portrait svg{width:100%;height:100%}
+.detail-vehicle{font-size:15px;font-weight:700;color:var(--ink);margin:10px 0 8px}
+.vehicle-ladder{list-style:none;margin:0 0 6px;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.vehicle-step{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:12px;background:var(--surface-tint);text-align:center;font-size:12px;color:var(--ink-soft)}
+.vehicle-step svg{width:40px;height:30px}
+.vehicle-step b{font-size:11px;padding:1px 8px;border-radius:999px;background:#fff;color:var(--ink-faint)}
+.vehicle-step.is-done b{background:var(--sein-gold-soft);color:#6B4A07}
+.vehicle-step.is-now{background:#fff;box-shadow:inset 0 0 0 2px var(--sein-blue);color:var(--ink)}
+.vehicle-step.is-now b{background:var(--sein-blue);color:#fff}
+.detail-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+.explorer-modal .modal-card{width:min(860px,calc(100vw - 32px));max-height:calc(100vh - 40px);border-radius:18px}
+.explorer-modal .modal-card-head{background:var(--surface-tint);border-bottom:1px solid var(--line)}
+.explorer-modal .modal-card-title{font-family:var(--font-display);font-size:24px;color:var(--ink)}
+.explorer-modal .modal-card-title:focus{outline:none}
+.explorer-body{display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px}
+.explorer-stage{background:#E4ECF7;border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.explorer-preview{width:200px;height:260px}
+.explorer-preview svg{width:100%;height:100%}
+.explorer-who{font-weight:700;color:var(--ink);margin:0}
+.explorer-note{font-size:13px;color:var(--ink-soft);margin:0}
+.explorer-options{display:flex;flex-direction:column;gap:14px}
+.explorer-options fieldset{border:0;margin:0;padding:0}
+.explorer-options legend{font-weight:700;color:var(--ink);margin-bottom:8px}
+.option-row{display:flex;flex-wrap:wrap;gap:12px}
+.option-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.option-choice{font:inherit;min-height:48px;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-weight:500}
+.option-choice[aria-pressed="true"]{border:3px solid var(--sein-blue);background:var(--surface-tint);font-weight:700}
+.option-swatch{width:48px;height:48px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 1px var(--line-strong);cursor:pointer}
+.option-swatch[aria-pressed="true"]{box-shadow:0 0 0 3px var(--sein-blue)}
+.option-choice:focus-visible,.option-swatch:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.explorer-modal .modal-card-foot{justify-content:flex-end;gap:8px}
+@media(max-width:700px){
+  .explorer-body{grid-template-columns:1fr}
+  .explorer-preview{width:150px;height:195px}
+  .vehicle-ladder{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .detail-portrait{width:64px;height:84px}
+  .option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

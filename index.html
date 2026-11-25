@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="journey.css">
   <link rel="stylesheet" href="book-helper.css">
   <link rel="stylesheet" href="quiz.css">
+  <link rel="stylesheet" href="explorer.css">
 </head>
 <body>
   <header class="school-header">
@@ -136,7 +137,7 @@
         <div class="expedition-select"><label for="dashClassSelect">누구와 함께 떠날까요?</label><select id="dashClassSelect" onchange="renderClassTable()"><option value="전체">🌍 전교생 전체 보기</option><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div>
         <div class="expedition-stat"><strong id="expeditionCount">—</strong><span>함께하는 탐험가</span></div>
         <div class="expedition-stat"><strong id="expeditionFinished">—</strong><span>세계 일주 완료</span></div>
-        <div class="expedition-note"><span aria-hidden="true">🧭</span><p>우리 모두의 속도로,<br><b>함께 떠나는 여행</b></p></div>
+        <div class="expedition-note"><button type="button" id="openExplorerMaker" class="button explorer-make-button">내 탐험가 만들기</button></div>
       </section>
       <section class="map-container-wrapper journey-map" aria-label="친구들의 세계여행 지도">
         <div class="atlas-toolbar"><div><span class="atlas-dot"></span><strong>우리들의 여행 지도</strong><span class="atlas-subtitle">7개의 대륙, 끝없는 이야기</span></div><div class="zoom-controls"><button type="button" onclick="changeZoom(-0.2)" aria-label="지도 축소">−</button><output id="zoomLevel" aria-live="polite">100%</output><button type="button" onclick="changeZoom(0.2)" aria-label="지도 확대">＋</button><button type="button" onclick="resetZoom()" aria-label="전체 지도 보기">↺</button></div></div>
@@ -151,7 +152,7 @@
         <div id="journeyClassLegend" class="class-legend" aria-label="반별 탐험가 색상"></div>
       </section>
       <p id="journeyStatus" class="journey-status" role="status">탐험대 정보를 불러오고 있어요.</p>
-      <section id="journeyDetail" class="journey-detail" hidden aria-label="선택한 탐험가의 여행"><div class="detail-top"><div><p class="journey-eyebrow" id="detailClass"></p><h3 id="detailName"></h3></div><button type="button" id="closeJourney" aria-label="탐험가 상세 닫기">✕</button></div><p id="detailRoute"></p><progress id="detailProgress" max="100" value="0" aria-label="다음 대륙까지 진행도"></progress><p id="detailRemaining"></p><div id="journeyPassport" class="journey-passport" aria-label="도착한 대륙의 여행 도장"></div><button type="button" id="journeyBooks" class="button is-small is-info is-light">이 친구의 독서 기록 보기 →</button></section>
+      <section id="journeyDetail" class="journey-detail" hidden aria-label="선택한 탐험가의 여행"><div class="detail-top"><div><p class="journey-eyebrow" id="detailClass"></p><h3 id="detailName"></h3></div><div id="detailPortrait" class="detail-portrait"></div><button type="button" id="closeJourney" aria-label="탐험가 상세 닫기">✕</button></div><p id="detailRoute"></p><progress id="detailProgress" max="100" value="0" aria-label="다음 대륙까지 진행도"></progress><p id="detailRemaining"></p><p id="detailVehicle" class="detail-vehicle"></p><ol id="journeyVehicles" class="vehicle-ladder" aria-label="대륙마다 바뀌는 탈것"></ol><div id="journeyPassport" class="journey-passport" aria-label="도착한 대륙의 여행 도장"></div><div class="detail-actions"><button type="button" id="journeyBooks" class="button is-small is-info is-light">이 친구의 독서 기록 보기</button><button type="button" id="changeExplorer" class="button is-small is-info is-outlined">모습 바꾸기</button></div></section>
       <div class="journey-roster-title"><h3>탐험가들의 독서 기록</h3><span>걸음마다 쌓이는 우리들의 이야기</span></div>
       <div id="classTableContainer" class="table-container mt-4" style="display:none;"><table class="table is-fullwidth is-striped custom-table"><thead><tr><th>반</th><th>번호</th><th>탐험가 이름</th><th>누적 걸음</th><th>위치</th><th>최근 읽은 책</th><th>비행일</th><th>관리</th></tr></thead><tbody id="classTableBody"></tbody></table></div>
       
@@ -196,9 +197,36 @@
     </div>
   </div>
 
+  <div id="explorerModal" class="modal explorer-modal" role="dialog" aria-modal="true" aria-labelledby="explorerTitle">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <h2 class="modal-card-title" id="explorerTitle" tabindex="-1">나만의 탐험가 만들기</h2>
+        <button type="button" class="delete" aria-label="닫기" onclick="closeExplorerMaker()"></button>
+      </header>
+      <section class="modal-card-body explorer-body">
+        <div class="explorer-stage"><div id="explorerPreview" class="explorer-preview"></div><p id="explorerWho" class="explorer-who"></p><p class="explorer-note">탐험가 조끼는 우리 반 색이에요.</p></div>
+        <form id="explorerForm" class="explorer-options">
+          <label class="label" for="explorerStudent">탐험가</label>
+          <div class="select is-fullwidth"><select id="explorerStudent" required></select></div>
+          <fieldset><legend>몸</legend><div id="explorerBody" class="option-row"></div></fieldset>
+          <fieldset><legend>피부색</legend><div id="explorerSkin" class="option-row"></div></fieldset>
+          <fieldset><legend>머리 모양</legend><div id="explorerHair" class="option-grid"></div></fieldset>
+          <fieldset><legend>머리색</legend><div id="explorerHairColor" class="option-row"></div></fieldset>
+        </form>
+        <p id="explorerStatus" class="quiz-status" role="status" aria-live="polite"></p>
+      </section>
+      <footer class="modal-card-foot">
+        <button type="submit" form="explorerForm" id="explorerSave" class="button is-info">이 모습으로 탐험하기</button>
+        <button type="button" class="button" onclick="closeExplorerMaker()">닫기</button>
+      </footer>
+    </div>
+  </div>
+
   <script src="book-catalog.js"></script>
   <script src="book-helper.js"></script>
   <script src="class-theme.js"></script>
+  <script src="avatar.js"></script>
   <script src="journey-model.js"></script>
   <script src="journey.js"></script>
   <script src="school-model.js"></script>

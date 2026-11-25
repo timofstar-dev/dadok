@@ -2,6 +2,8 @@
 const JourneyUI = (() => {
   // 학교 전체 반 순서(학년 순). 반 색이 화면마다 달라지지 않도록 app.js가 알려 줍니다.
   let classOrder = [];
+  // 학생별 캐릭터 모습(서버의 '탐험가' 시트). 없으면 기본 모습으로 그립니다.
+  let explorers = [];
   let classes = [];
   let roster = [], selectedKey = null, currentGroup = '', previousSteps = new Map();
   const $ = id => document.getElementById(id);
@@ -88,11 +90,11 @@ const JourneyUI = (() => {
       if (!marker) {
         marker = document.createElement('button'); marker.type = 'button'; marker.className = 'traveler'; marker.dataset.key = s.key;
         const avatar = document.createElement('span'); avatar.className = 'traveler-avatar'; avatar.setAttribute('aria-hidden', 'true');
-        avatar.innerHTML = '<svg viewBox="0 0 30 30"><rect x="4" y="15" width="8" height="11" rx="3" fill="currentColor"/><path d="M10 28v-9q5-6 10 0v9" fill="currentColor"/><circle cx="15" cy="10" r="7" fill="#ffe1b0"/><path d="M7 9q0-9 8-8t8 8M5 9h20" fill="currentColor" stroke="currentColor" stroke-width="2"/><circle cx="13" cy="11" r=".8" fill="#3c4842"/><circle cx="18" cy="11" r=".8" fill="#3c4842"/><path d="M13 14q2 2 4 0" fill="none" stroke="#aa694e"/></svg>';
         const name = document.createElement('span'); name.className = 'traveler-name'; marker.append(avatar, name);
         marker.onclick = () => select(s.key, true); layer.append(marker);
       }
       const label = marker.querySelector('.traveler-name'); label.textContent = s.n;
+      marker.querySelector('.traveler-avatar').replaceChildren(Avatar.rider(document, lookFor(s), Avatar.vehicleIndex(s.journey), s.color));
       marker.style.setProperty('--class-color', s.color);
       const dot = svg('circle', {cx:s.x,cy:s.y,r:4.5,fill:s.color,class:'route-student-dot'});
       positions.append(dot);
@@ -103,7 +105,7 @@ const JourneyUI = (() => {
       marker.onmouseleave = () => updateDetail();
       marker.onfocus = () => preview(s.key);
       marker.onblur = () => updateDetail();
-      marker.setAttribute('aria-label', `${marker.title} · ${s.journey.current.name}${s.journey.next ? '에서 ' + s.journey.next.name + '(으)로 여행 중' : ' 세계 일주 완료'}`);
+      marker.setAttribute('aria-label', `${marker.title} · ${Avatar.VEHICLES[Avatar.vehicleIndex(s.journey)].name} · ${s.journey.current.name}${s.journey.next ? '에서 ' + s.journey.next.name + '(으)로 여행 중' : ' 세계 일주 완료'}`);
       const previous = previousSteps.get(s.key);
       if (previous !== undefined && s.steps > previous && JourneyModel.getJourney(previous).current.min < s.journey.current.min) {
         marker.classList.remove('just-arrived'); void marker.offsetWidth; marker.classList.add('just-arrived');
@@ -165,9 +167,32 @@ const JourneyUI = (() => {
       stamp.append(icon,name,status); stamps.append(stamp);
     });
     $('journeyBooks').onclick = () => { showStudentProfile(student); $('dashProfile').scrollIntoView({block:'nearest'}); };
+    $('detailPortrait').replaceChildren(Avatar.fullBody(document, lookFor(student), student.color));
+    const vIndex = Avatar.vehicleIndex(j), next = Avatar.VEHICLES[vIndex + 1];
+    $('detailVehicle').textContent = `지금 탈것: ${Avatar.VEHICLES[vIndex].name}` + (j.next && next ? ` · ${j.next.name}에 도착하면 ${next.name}${/[가-힣]$/.test(next.name) && (next.name.charCodeAt(next.name.length - 1) - 0xAC00) % 28 ? '으로' : '로'} 갈아타요` : '');
+    const ladder = $('journeyVehicles'); ladder.replaceChildren();
+    Avatar.VEHICLES.forEach((vehicle, i) => {
+      const item = document.createElement('li');
+      const state = i < vIndex ? 'done' : i === vIndex ? 'now' : 'locked';
+      item.className = `vehicle-step is-${state}`;
+      const where = i === Avatar.VEHICLES.length - 1 ? '세계 일주' : JourneyModel.STOPS[i].name;
+      item.append(Avatar.vehicleIcon(document, i, state === 'locked' ? '#8A9BBB' : student.color));
+      const text = document.createElement('span'); text.textContent = `${vehicle.name} · ${where}`;
+      const tag = document.createElement('b'); tag.textContent = state === 'done' ? '탔어요' : state === 'now' ? '지금' : '잠김';
+      item.append(text, tag); ladder.append(item);
+    });
+    $('changeExplorer').onclick = () => { if (typeof openExplorerMaker === 'function') openExplorerMaker(student); };
   }
   function clearSelection() { selectedKey = null; previousSteps = new Map(); }
   function selectedPosition() { const s = roster.find(s => s.key === selectedKey); return s ? {x:s.x,y:s.y} : null; }
   function setClassOrder(order) { classOrder = Array.isArray(order) ? [...order] : []; }
-  return {getStudents, render, select, clearSelection, selectedPosition, setClassOrder};
+  function setExplorers(list) { explorers = Array.isArray(list) ? list : []; }
+  // 같은 학년·반·이름이 있으면 그 모습, 없으면(진급 등) 같은 이름이 한 명뿐일 때 그 모습입니다.
+  function lookFor(student) {
+    const exact = explorers.find(e => e.name === student.n && String(e.grade) === String(student.g) && e.className === student.c);
+    if (exact) return exact.look;
+    const same = explorers.filter(e => e.name === student.n);
+    return same.length === 1 ? same[0].look : null;
+  }
+  return {getStudents, render, select, clearSelection, selectedPosition, setClassOrder, setExplorers, lookFor};
 })();

@@ -319,6 +319,100 @@ $('quizForm').onsubmit = async function(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeQuiz) closeQuiz(); });
 $('bookTitleInput').addEventListener('input', updateQuizHint);
 
+// ---------- 탐험가 캐릭터 ----------
+// 캐릭터 모습은 서버의 '탐험가' 시트에 저장합니다. 불러오지 못해도 지도는 기본 모습으로 그립니다.
+let explorerList = [], makerLook = {...Avatar.DEFAULT_LOOK}, explorerSaving = false;
+async function loadExplorers() {
+  try {
+    const res = await readJSON(`${API_URL}?action=getExplorers`);
+    explorerList = Array.isArray(res?.explorers) ? res.explorers : [];
+  } catch { explorerList = []; }
+  JourneyUI.setExplorers(explorerList);
+  if (journeyDataReady && explorerList.length) renderClassTable();
+}
+function currentStudents() {
+  if (!config) return [];
+  const db = SchoolModel.rosterForYear(baseStudentDB, SchoolModel.schoolYear(today(), config), config);
+  const order = classNames(db), list = [];
+  for (const [grade, groups] of Object.entries(db)) for (const [c, names] of Object.entries(groups || {})) for (const n of names) list.push({g: String(grade), c, n});
+  return list.sort((a, b) => order.indexOf(a.c) - order.indexOf(b.c) || Number(a.g) - Number(b.g) || a.n.localeCompare(b.n, 'ko'));
+}
+function makerStudent() {
+  try { const [g, c, n] = JSON.parse($('explorerStudent').value || 'null') || []; return n ? {g, c, n} : null; } catch { return null; }
+}
+function makerChoice(className, label, pressed, onPick, swatch) {
+  const button = document.createElement('button');
+  button.type = 'button'; button.className = className; button.setAttribute('aria-pressed', String(pressed));
+  if (swatch) { button.style.background = swatch; button.setAttribute('aria-label', label); }
+  else button.textContent = label;
+  button.onclick = () => { onPick(); updateMaker(); };
+  return button;
+}
+function buildMakerOptions() {
+  const set = (key, value) => () => { makerLook = {...makerLook, [key]: value}; };
+  $('explorerBody').replaceChildren(...Avatar.BODIES.map(([id, label]) => makerChoice('option-choice', label, makerLook.body === id, set('body', id))));
+  $('explorerSkin').replaceChildren(...Avatar.SKINS.map(([color, label], i) => makerChoice('option-swatch', label, makerLook.skin === i, set('skin', i), color)));
+  $('explorerHair').replaceChildren(...Avatar.HAIRS.map(([id, label]) => makerChoice('option-choice', label, makerLook.hair === id, set('hair', id))));
+  $('explorerHairColor').replaceChildren(...Avatar.HAIR_COLORS.map(([color, label], i) => makerChoice('option-swatch', label, makerLook.hairColor === i, set('hairColor', i), color)));
+}
+// 버튼은 그대로 두고 눌린 상태와 그림만 바꿔서, 키보드 초점이 사라지지 않게 합니다.
+function updateMaker() {
+  const pressed = (id, values) => [...$(id).children].forEach((b, i) => b.setAttribute('aria-pressed', String(values[i])));
+  pressed('explorerBody', Avatar.BODIES.map(([id]) => makerLook.body === id));
+  pressed('explorerSkin', Avatar.SKINS.map((_, i) => makerLook.skin === i));
+  pressed('explorerHair', Avatar.HAIRS.map(([id]) => makerLook.hair === id));
+  pressed('explorerHairColor', Avatar.HAIR_COLORS.map((_, i) => makerLook.hairColor === i));
+  const student = makerStudent();
+  const color = student ? ClassTheme.colorFor(student.c, classNames(studentDB)) : '#4A5D82';
+  $('explorerPreview').replaceChildren(Avatar.fullBody(document, makerLook, color));
+  $('explorerWho').textContent = student ? `${student.n} · ${student.g}학년 ${student.c}` : '탐험가 이름을 골라 주세요';
+}
+function openExplorerMaker(student) {
+  const students = currentStudents();
+  $('explorerStudent').replaceChildren(new Option('이름을 고르세요', ''), ...students.map(s => new Option(`${s.g}학년 ${s.c} ${s.n}`, JSON.stringify([s.g, s.c, s.n]))));
+  if (student) $('explorerStudent').value = JSON.stringify([String(student.g), student.c, student.n]);
+  makerLook = Avatar.normalize(student ? JourneyUI.lookFor(student) : null);
+  buildMakerOptions(); updateMaker();
+  $('explorerStatus').textContent = ''; $('explorerSave').disabled = false;
+  $('explorerModal').classList.add('is-active'); $('explorerTitle').focus();
+}
+function closeExplorerMaker() {
+  if (explorerSaving) return;
+  $('explorerModal').classList.remove('is-active'); $('openExplorerMaker').focus();
+}
+$('explorerStudent').onchange = () => {
+  const student = makerStudent();
+  makerLook = Avatar.normalize(student ? JourneyUI.lookFor(student) : null);
+  updateMaker();
+};
+$('explorerForm').onsubmit = async e => {
+  e.preventDefault(); if (explorerSaving) return;
+  const student = makerStudent();
+  if (!student) { $('explorerStatus').textContent = '탐험가 이름을 먼저 골라 주세요.'; $('explorerStudent').focus(); return; }
+  explorerSaving = true; $('explorerSave').classList.add('is-loading'); $('explorerStatus').textContent = '저장하고 있어요.';
+  let res = null;
+  try {
+    const response = await fetch(API_URL, {method: 'POST', body: JSON.stringify({action: 'saveExplorer', grade: student.g, className: student.c, studentName: student.n, look: makerLook}), signal: AbortSignal.timeout(30000)});
+    if (!response.ok) throw new Error('SAVE_REJECTED');
+    res = await response.json();
+  } catch { res = null; }
+  finally { explorerSaving = false; $('explorerSave').classList.remove('is-loading'); }
+  if (res?.success) {
+    explorerList = explorerList.filter(x => !(x.name === student.n && (String(x.grade) === student.g && x.className === student.c || explorerList.filter(y => y.name === student.n).length === 1)));
+    explorerList.push({name: student.n, grade: Number(student.g), className: student.c, look: res.look || makerLook});
+    JourneyUI.setExplorers(explorerList);
+    closeExplorerMaker();
+    renderClassTable();
+    $('journeyStatus').textContent = `${student.n} 탐험가의 새 모습을 저장했어요.`;
+  } else {
+    $('explorerStatus').textContent = res?.error === 'INVALID_STUDENT' ? '학생 명단에서 이 이름을 찾지 못했어요. 선생님께 알려 주세요.'
+      : res?.error === 'INVALID_LOOK' ? '고른 모습을 저장하지 못했어요. 다시 골라 주세요.'
+      : '저장했는지 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+  }
+};
+$('openExplorerMaker').onclick = () => openExplorerMaker(null);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('explorerModal').classList.contains('is-active')) closeExplorerMaker(); });
+
 $('readingForm').onsubmit = async function(e) {
   e.preventDefault(); if(saving || quizLoading || !config || !this.reportValidity()) return;
   const form=this, controls=[...form.elements], disabled=controls.map(el=>el.disabled);
@@ -359,7 +453,7 @@ window.onload = async () => {
     baseStudentDB=db.students || db;
     if(db.students && Number.isInteger(db.rosterYear)) config.rosterYear=db.rosterYear;
     if(db.rostersByYear) config.rostersByYear={...config.rostersByYear,...db.rostersByYear};
-    updateFormRoster(); await Promise.all([loadGlobalData(), loadQuizBooks()]);$('submitBtn').disabled=false;
+    updateFormRoster(); await Promise.all([loadGlobalData(), loadQuizBooks(), loadExplorers()]);$('submitBtn').disabled=false;
     $('recordDateInput').addEventListener('change',updateFormRoster);
   } catch {
     $('errorBox').style.display='block';$('errorBox').textContent='데이터를 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.';
