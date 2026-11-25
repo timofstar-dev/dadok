@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>퀴즈 관리 · 다독다독 세계여행</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="teacher.css">
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>
+  <main class="teacher-shell">
+    <header class="teacher-top">
+      <div><p class="teacher-eyebrow">다독다독 세계여행 · 선생님 전용</p><h1>독서 퀴즈 관리</h1></div>
+      <a class="teacher-back" href="./">학생 화면으로 ↗</a>
+    </header>
+
+    <section id="loginView" class="teacher-card login-card" aria-labelledby="loginHeading">
+      <h2 id="loginHeading">선생님 비밀번호</h2>
+      <p class="teacher-help">퀴즈를 검토하고 승인하려면 비밀번호를 입력해 주세요. 비밀번호는 이 창을 닫으면 잊혀요.</p>
+      <form id="loginForm">
+        <label class="label" for="passwordInput">비밀번호</label>
+        <div class="login-row">
+          <input class="input" type="password" id="passwordInput" autocomplete="current-password" required>
+          <button class="button is-info" type="submit" id="loginBtn">들어가기</button>
+        </div>
+      </form>
+      <p id="loginStatus" class="teacher-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="appView" hidden>
+      <p id="globalStatus" class="teacher-status" role="status" aria-live="polite"></p>
+
+      <section id="listView" aria-labelledby="quizHeading">
+        <div class="section-head">
+          <h2 id="quizHeading">퀴즈 목록</h2>
+          <div class="section-tools">
+            <label for="statusFilter" class="is-sr-only">상태로 거르기</label>
+            <div class="select is-small"><select id="statusFilter"><option value="">전체</option><option value="검토중">검토중</option><option value="승인">승인</option><option value="보류">보류</option></select></div>
+            <button type="button" class="button is-small is-info" id="newQuizBtn">＋ 새 퀴즈</button>
+          </div>
+        </div>
+        <ul id="bookList" class="book-cards" aria-label="퀴즈 목록"></ul>
+
+        <div class="section-head mt-6"><h2 id="requestHeading">출제 요청</h2><span class="teacher-help">퀴즈가 없는 책을 기록한 학생 수가 많은 순서예요.</span></div>
+        <div class="table-container">
+          <table class="table is-fullwidth request-table" aria-labelledby="requestHeading">
+            <thead><tr><th>책 제목</th><th>요청</th><th>최근 요청</th><th><span class="is-sr-only">작업</span></th></tr></thead>
+            <tbody id="requestList"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="editorView" class="teacher-card" hidden aria-labelledby="editorHeading">
+        <div class="section-head">
+          <h2 id="editorHeading" tabindex="-1">퀴즈 편집</h2>
+          <span id="editorBadge" class="status-badge"></span>
+        </div>
+        <div class="columns is-multiline">
+          <div class="column is-7"><label class="label" for="edTitle">책 제목</label><input class="input" id="edTitle" maxlength="120" required></div>
+          <div class="column is-3"><label class="label" for="edAuthor">지은이</label><input class="input" id="edAuthor" maxlength="80"></div>
+          <div class="column is-2"><label class="label" for="edLevel">단계 (1~12)</label><input class="input" id="edLevel" type="number" min="1" max="12"></div>
+          <div class="column is-12"><label class="label" for="edMemo">메모</label><textarea class="textarea" id="edMemo" rows="2" maxlength="500"></textarea></div>
+        </div>
+        <p class="teacher-help mb-3">정답 보기 왼쪽의 동그라미를 눌러 정답을 고르세요. 보기는 2~4개를 쓸 수 있어요. 책 한 권에 10문제를 권장해요.</p>
+        <ol id="questionList" class="question-editor"></ol>
+        <button type="button" class="button is-small is-light" id="addQuestionBtn">＋ 문제 추가</button>
+        <p id="editorStatus" class="teacher-status" role="status" aria-live="polite"></p>
+        <div class="editor-actions">
+          <button type="button" class="button" id="backBtn">← 목록으로</button>
+          <span class="editor-spacer"></span>
+          <button type="button" class="button is-light" id="holdBtn">보류</button>
+          <button type="button" class="button is-light" id="reviewBtn">검토중으로</button>
+          <button type="button" class="button is-info is-light" id="saveBtn">저장</button>
+          <button type="button" class="button is-success" id="approveBtn">저장하고 승인</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="teacher.js"></script>
+</body>
+</html>
