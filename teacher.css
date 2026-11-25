@@ -5,7 +5,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-body);min-h
 .teacher-shell{max-width:980px;margin:0 auto;padding:24px 16px 60px}
 .teacher-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
 .teacher-top h1{font-family:var(--font-display);font-size:30px;font-weight:400;color:var(--ink)}
-.teacher-brand{display:flex;align-items:center;gap:14px}.teacher-brand svg{width:40px;height:44px;flex:0 0 auto}
+.teacher-brand{display:flex;align-items:center;gap:14px}.teacher-brand img{width:48px;height:48px;flex:0 0 auto;object-fit:contain}
 .teacher-eyebrow{font-size:14px;color:var(--ink-faint)}
 .teacher-back{font-size:14px;color:var(--sein-blue);text-decoration:underline;text-underline-offset:3px}
 .teacher-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 14px #1d58730a}
