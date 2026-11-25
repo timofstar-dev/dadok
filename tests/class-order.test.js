@@ -24,7 +24,7 @@ test('dashboards list classes from the youngest grade to the oldest',async t=>{
     if(url.includes('action=getQuizBooks'))return reply({books:[]});
     throw new Error(url);
   };
-  for(const file of ['journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']){const s=w.document.createElement('script');s.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(s);}
+  for(const file of ['class-theme.js','journey-model.js','journey.js','school-model.js','quiz-model.js','app.js']){const s=w.document.createElement('script');s.textContent=fs.readFileSync(path.join(root,file),'utf8');w.document.body.append(s);}
   const init=w.onload;w.onload=null;await init();
   const $=id=>w.document.getElementById(id);
   $('yearFilter').value='2026';w.selectYear();
@@ -36,4 +36,12 @@ test('dashboards list classes from the youngest grade to the oldest',async t=>{
   assert.deepEqual(rows.map(r=>r[0]),['오세아니아반','오세아니아반','아시아반','아시아반','아프리카반','아프리카반','아메리카반','유럽반','아틀랜틱반']);
   assert.deepEqual(rows.slice(0,2).map(r=>r[1]),['가람 (1학년)','나래 (2학년)'],'grade order inside a class');
   assert.deepEqual([...$('journeyClassLegend').textContent.matchAll(/(.+?반)/g)].map(m=>m[1]),ORDER);
+
+  // Each class keeps its own color and emblem, even when shown alone.
+  const COLORS=['#0E7C86','#C2412D','#9A6312','#2F7A4A','#6A4C9C','#1D4E89'];
+  const legendColors=()=>[...$('journeyClassLegend').querySelectorAll('.class-emblem')].map(e=>e.style.getPropertyValue('--class-color').toUpperCase());
+  assert.deepEqual(legendColors(),COLORS);
+  assert.equal($('monthlyClassSteps').querySelectorAll('h4 .class-emblem svg').length,6);
+  $('dashClassSelect').value='유럽반';w.renderClassTable();
+  assert.deepEqual(legendColors(),['#6A4C9C']);
 });

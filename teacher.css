@@ -1,46 +1,47 @@
 /* Teacher quiz review page */
 /* Bulma's reset gives <section> display:block, which would override the hidden attribute. */
 [hidden]{display:none!important}
-body{background:#f2f7f9;color:#2f4a56;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;min-height:100vh}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);min-height:100vh}
 .teacher-shell{max-width:980px;margin:0 auto;padding:24px 16px 60px}
 .teacher-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
-.teacher-top h1{font-size:26px;font-weight:800;color:#1d5873}
-.teacher-eyebrow{font-size:12px;font-weight:800;letter-spacing:1px;color:#4a7486}
-.teacher-back{font-size:14px;color:#1f6f8f;text-decoration:underline;text-underline-offset:3px}
-.teacher-card{background:#fff;border:1px solid #dbe8ee;border-radius:16px;padding:24px;box-shadow:0 4px 14px #1d58730a}
+.teacher-top h1{font-family:var(--font-display);font-size:30px;font-weight:400;color:var(--ink)}
+.teacher-brand{display:flex;align-items:center;gap:14px}.teacher-brand svg{width:40px;height:44px;flex:0 0 auto}
+.teacher-eyebrow{font-size:14px;color:var(--ink-faint)}
+.teacher-back{font-size:14px;color:var(--sein-blue);text-decoration:underline;text-underline-offset:3px}
+.teacher-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 14px #1d58730a}
 .login-card{max-width:460px}
-.login-card h2,.section-head h2{font-size:19px;font-weight:800;color:#24485a}
+.login-card h2,.section-head h2{font-size:19px;font-weight:800;color:var(--ink)}
 .login-row{display:flex;gap:8px}
-.teacher-help{font-size:13px;color:#4f6b78;line-height:1.7;margin:6px 0 14px}
-.teacher-status{font-size:14px;line-height:1.7;color:#2c5f75;margin-top:12px}
+.teacher-help{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:6px 0 14px}
+.teacher-status{font-size:14px;line-height:1.7;color:var(--ink-soft);margin-top:12px}
 .teacher-status:empty{display:none}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .section-head h2:focus{outline:none}
 .section-tools{display:flex;gap:8px;align-items:center}
 .book-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.book-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;background:#fff;border:1px solid #d3e3ea;border-radius:12px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
-.book-card:hover{border-color:#7fb3c8;background:#f7fbfd}
-.book-card:focus-visible,.teacher-shell button:focus-visible{outline:3px solid #d49e40;outline-offset:2px}
+.book-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
+.book-card:hover{border-color:var(--line-strong);background:var(--surface-tint)}
+.book-card:focus-visible,.teacher-shell button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .book-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.book-card-head strong{color:#1f4d62;line-height:1.5;overflow-wrap:anywhere}
-.book-card-meta{font-size:13px;color:#4f6b78}
+.book-card-head strong{color:var(--ink);line-height:1.5;overflow-wrap:anywhere}
+.book-card-meta{font-size:13px;color:var(--ink-soft)}
 .book-card-memo{font-size:12px;color:#6a5216;background:#fff8e6;border-radius:6px;padding:5px 8px;line-height:1.6}
-.status-badge{flex:0 0 auto;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;background:#e8eef1;color:#3c5866}
+.status-badge{flex:0 0 auto;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;background:#e8eef1;color:var(--ink-soft)}
 .status-badge.is-review{background:#fff1cf;color:#6b4a07}
 .status-badge.is-approved{background:#dcf3e6;color:#1d6440}
 .status-badge.is-hold{background:#eceef0;color:#555f66}
-.empty-note{color:#5b7380;font-size:14px;padding:10px 2px}
+.empty-note{color:var(--ink-faint);font-size:14px;padding:10px 2px}
 .request-table td{vertical-align:middle}
 .request-actions{white-space:nowrap;text-align:right}
 .request-actions .button+.button{margin-left:6px}
 .question-editor{list-style:none;margin:0 0 12px;padding:0}
-.question-item fieldset{border:1px solid #dbe6ea;border-radius:12px;padding:14px 16px 10px;margin-bottom:12px}
-.question-item legend{font-weight:800;color:#1d79a0;padding:0 4px}
+.question-item fieldset{border:1px solid var(--line);border-radius:12px;padding:14px 16px 10px;margin-bottom:12px}
+.question-item legend{font-weight:800;color:var(--sein-blue);padding:0 4px}
 .question-text{margin-bottom:10px}
 .choice-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
 .choice-row input[type=radio]{width:18px;height:18px;flex:0 0 auto;accent-color:#1d8a55}
 .choice-row:has(input[type=radio]:checked) .choice-text{border-color:#58b07f;background:#f1faf4}
 .remove-question{color:#9a4a28;margin-top:4px}
-.editor-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid #e3ecf0}
+.editor-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .editor-spacer{flex:1}
 @media(max-width:600px){.teacher-card{padding:16px}.editor-actions .button{flex:1 1 45%}.editor-spacer{display:none}.request-actions{white-space:normal}}

@@ -1,0 +1,79 @@
+/* 세인기독학교 테마: 학교 로고 파랑, SCA 문장의 남색과 금색.
+   금색은 도착·도장·배지처럼 축하하는 순간에만 씁니다.
+   다른 스타일 파일보다 먼저 불러오고, 색은 이 변수로만 바꿉니다. */
+:root{
+  --sein-blue:#1E5FB4;      /* 로고 파랑: 버튼, 링크, 선택 */
+  --sein-blue-dark:#174C91;
+  --sein-navy:#172A57;      /* 문장 남색: 제목, 본문 */
+  --sein-gold:#E8B931;      /* 문장 금색: 축하 */
+  --sein-gold-soft:#FFF4CC;
+  --ink:#172A57;
+  --ink-soft:#3A4D74;       /* 보조 글자 (흰 바탕 대비 8:1) */
+  --ink-faint:#4A5D82;      /* 작은 안내 글자 (흰 바탕 대비 6:1) */
+  --paper:#F3F6FA;          /* 페이지 바탕 */
+  --surface:#FFFFFF;
+  --surface-tint:#EEF3FA;
+  --line:#D5DFEE;
+  --line-strong:#B9C7DE;
+  --focus:#C99A1A;
+  --font-display:'Jua','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --font-body:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{color:var(--ink);font-family:var(--font-body)}
+.button,.input,.select select,.textarea{font-family:var(--font-body)}
+a{color:var(--sein-blue)}a:hover{color:var(--sein-navy)}
+
+/* 학교 머리띠: 문장, 이름, 화면 이동 */
+.school-header{background:var(--sein-navy);color:#fff}
+.school-header-inner{max-width:1260px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px}
+.school-brand{display:flex;align-items:center;gap:12px;flex:1 1 240px;min-width:0}
+.school-crest{flex:0 0 auto;width:38px;height:42px}
+.school-name{display:flex;flex-direction:column;line-height:1.25}
+.school-name small{font-size:13px;color:#C9D6EC}
+.school-name strong{font-family:var(--font-display);font-weight:400;font-size:22px;color:#fff}
+.school-tabs.tabs{margin:0;overflow:visible}
+.school-tabs.tabs ul{border:0;gap:6px;flex-wrap:wrap}
+.school-tabs.tabs li{display:block}
+.school-tabs.tabs li button{display:flex;align-items:center;gap:7px;font:inherit;font-size:16px;font-weight:500;color:#fff;background:transparent;border:0;border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer}
+.school-tabs.tabs li button svg{width:18px;height:18px;flex:0 0 auto}
+.school-tabs.tabs li button:hover{background:rgba(255,255,255,.12)}
+.school-tabs.tabs li.is-active button{background:var(--sein-gold);color:var(--sein-navy);font-weight:700}
+.school-tabs.tabs li button:focus-visible{outline:3px solid var(--sein-gold);outline-offset:2px}
+.school-main{padding:20px 15px 40px}
+
+/* 화면 공통 */
+.tab-content{border-radius:18px}
+.box{border:1px solid var(--line);box-shadow:none;border-radius:16px}
+.box-title{font-family:var(--font-display);font-weight:400;font-size:20px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:15px}
+.label{color:var(--ink-soft)}
+.page-title{font-family:var(--font-display);font-weight:400;font-size:30px;color:var(--ink);text-align:center;margin:0 0 20px}
+.custom-table th{background-color:var(--sein-navy)!important}
+.button.is-link,.button.is-info{background-color:var(--sein-blue);border-color:transparent;color:#fff}
+.button.is-link:hover,.button.is-info:hover{background-color:var(--sein-blue-dark);color:#fff}
+.button.is-info.is-light{background-color:var(--surface-tint);color:var(--sein-blue-dark)}
+.button.is-info.is-light:hover{background-color:#DFE8F6;color:var(--sein-navy)}
+.save-button{font-family:var(--font-display);font-size:22px!important}
+.success-steps{color:var(--sein-blue);font-family:var(--font-display);font-size:2rem;margin-right:4px}
+
+/* 반 엠블럼: 반마다 같은 색과 상징을 어디서나 씁니다 */
+.class-emblem{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:var(--class-color,#4A5D82);color:#fff;flex:0 0 auto;vertical-align:middle}
+.class-emblem svg{width:15px;height:15px}
+.class-chip{display:inline-flex;align-items:center;gap:7px}
+
+@media(max-width:600px){
+  body{padding:0!important}
+  .school-header-inner{padding:10px 12px}
+  .school-tabs.tabs ul{gap:2px}
+  .school-tabs.tabs li button{padding:8px 11px;font-size:15px}
+  .school-main{padding:12px 8px 32px}
+  .page-title{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* 지도 아래 반 표시 */
+.class-legend{font-size:13px!important;color:var(--ink)!important;gap:10px 18px!important}
+.month-picker{background:var(--surface-tint);border-color:var(--line)}
+.button.is-info.is-outlined{background:transparent;border-color:var(--sein-blue);color:var(--sein-blue)}
+.button.is-info.is-outlined:hover,.button.is-info.is-outlined:focus{background:var(--sein-blue);border-color:var(--sein-blue);color:#fff}

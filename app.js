@@ -55,7 +55,12 @@ function updateStudentList() {
 }
 function openTab(e, id) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('is-active-content', el.id === id));
-  document.querySelectorAll('.tabs li').forEach(el => el.classList.toggle('is-active', el === e.currentTarget));
+  document.querySelectorAll('.tabs li').forEach(el => {
+    const active = el === e.currentTarget;
+    el.classList.toggle('is-active', active);
+    el.querySelector('button')?.toggleAttribute('aria-current', active);
+    if (active) el.querySelector('button')?.setAttribute('aria-current', 'page');
+  });
   if (id === 'dashboard-tab') { renderClassTable(); fitMap(); }
 }
 function fitMap() {
@@ -108,6 +113,7 @@ function selectYear() {
   globalData = SchoolModel.filterRoster(yearLogs, studentDB);
   $('yearPeriod').textContent = `${selectedYear}-03-01 ~ ${selectedYear + 1}-02-${new Date(Date.UTC(selectedYear + 1, 2, 0)).getUTCDate()} · 이 기간의 기록만 집계합니다.`;
   const names = classNames(studentDB);
+  JourneyUI.setClassOrder(names);
   options('classFilter', names);
   const previousGroup = $('dashClassSelect').value;
   $('dashClassSelect').replaceChildren(new Option('🌍 전교생 전체 보기', '전체'), ...names.map(c=>new Option(c,c)));
@@ -155,7 +161,7 @@ function renderMonthlyLeaderboard() {
     const students=JourneyUI.getStudents(studentDB,logs,c).sort((a,b)=>b.steps-a.steps || a.n.localeCompare(b.n,'ko'));
     const column=document.createElement('div');column.className='column is-4';
     const box=document.createElement('div');box.className='box p-3 has-background-white-bis';
-    const heading=document.createElement('h4');heading.className='title is-6 has-text-info mb-2';heading.textContent=c;box.append(heading);
+    const heading=document.createElement('h4');heading.className='title is-6 mb-2 class-chip';heading.append(ClassTheme.emblem(document,c,classNames(studentDB)),document.createTextNode(c));box.append(heading);
     students.forEach(s=>{const line=document.createElement(s.steps>=100?'strong':'p');line.className='monthly-student';line.textContent=`${s.n}(${s.steps.toLocaleString()}걸음)`;box.append(line);});
     column.append(box);parent.append(column);
   });

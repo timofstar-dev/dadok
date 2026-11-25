@@ -1,6 +1,7 @@
 /* Shared expedition view. No production writes or additional service dependencies. */
 const JourneyUI = (() => {
-  const colors = ['#d47839', '#408877', '#b56a85', '#557ead', '#8c77ae', '#9a8737'];
+  // 학교 전체 반 순서(학년 순). 반 색이 화면마다 달라지지 않도록 app.js가 알려 줍니다.
+  let classOrder = [];
   let classes = [];
   let roster = [], selectedKey = null, currentGroup = '', previousSteps = new Map();
   const $ = id => document.getElementById(id);
@@ -24,7 +25,7 @@ const JourneyUI = (() => {
           const records = logs.filter(r => gradeNumber(r[1]) === g && r[2] === className && r[3] === n).sort((a, b) => new Date(b[0]) - new Date(a[0]));
           const total = records.reduce((sum, r) => sum + (Number.isFinite(Number(r[7])) ? Number(r[7]) : 0), 0);
           const journey = JourneyModel.getJourney(total);
-          result.set(key, { key, g, n, c: className, logs: records, steps: journey.steps, journey, x: journey.x, y: journey.y, color: colors[Math.max(0, classes.indexOf(className))] });
+          result.set(key, { key, g, n, c: className, logs: records, steps: journey.steps, journey, x: journey.x, y: journey.y, color: ClassTheme.colorFor(className, classOrder.length ? classOrder : classes) });
         }
       }
     }
@@ -43,7 +44,8 @@ const JourneyUI = (() => {
     const changedGroup = group !== currentGroup; currentGroup = group;
     if (changedGroup) previousSteps = new Map();
     classes = [...new Set([...students].sort(byClassGrade(students)).map(s => s.c))];
-    students.forEach(s => { s.color = colors[classes.indexOf(s.c) % colors.length]; });
+    const order = classOrder.length ? classOrder : classes;
+    students.forEach(s => { s.color = ClassTheme.colorFor(s.c, order); });
     const picker = $('locateTraveler');
     picker.replaceChildren(new Option('탐험가 선택', ''), ...students.map(s => new Option(`${s.n} · ${s.g}학년 ${s.c} · ${s.steps.toLocaleString()}걸음`, s.key)));
     const {MARKER_WIDTH, MARKER_HEIGHT, MAP_PADDING} = JourneyModel;
@@ -74,8 +76,8 @@ const JourneyUI = (() => {
     });
     const legend = $('journeyClassLegend'); legend.replaceChildren();
     classes.filter(c => students.some(s => s.c === c)).forEach(c => {
-      const item = document.createElement('span'); item.style.setProperty('--class-color', colors[classes.indexOf(c) % colors.length]);
-      const dot = document.createElement('i'); item.append(dot, document.createTextNode(c)); legend.append(item);
+      const item = document.createElement('span'); item.className = 'class-chip'; item.style.setProperty('--class-color', ClassTheme.colorFor(c, order));
+      item.append(ClassTheme.emblem(document, c, order), document.createTextNode(c)); legend.append(item);
     });
     const layer = $('markerLayer'); const old = new Map([...layer.children].map(el => [el.dataset.key, el]));
     const positions = $('journeyPositions'); positions.replaceChildren();
@@ -166,5 +168,6 @@ const JourneyUI = (() => {
   }
   function clearSelection() { selectedKey = null; previousSteps = new Map(); }
   function selectedPosition() { const s = roster.find(s => s.key === selectedKey); return s ? {x:s.x,y:s.y} : null; }
-  return {getStudents, render, select, clearSelection, selectedPosition};
+  function setClassOrder(order) { classOrder = Array.isArray(order) ? [...order] : []; }
+  return {getStudents, render, select, clearSelection, selectedPosition, setClassOrder};
 })();

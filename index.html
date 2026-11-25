@@ -5,33 +5,41 @@
   <title>다독다독 세계여행</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="다독다독 세계여행: 책을 읽은 만큼 걸음을 모아 친구들과 함께 세계 일주를 떠나는 학교 독서 기록 프로그램입니다.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
-    body { background-color: #f0f9ff; padding: 15px; font-family: 'Apple SD Gothic Neo', sans-serif; }
-    .tab-content { display: none; padding: 20px; background: white; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .tab-content { display: none; padding: 20px; background: var(--surface); border: 1px solid var(--line); }
     .is-active-content { display: block; }
-    .box-title { border-bottom: 2px solid #0284c7; padding-bottom: 5px; margin-bottom: 15px; font-weight: bold; color: #0369a1; }
-    .label { font-size: 0.95rem; color: #334155; }
-    
+    .label { font-size: 0.95rem; }
     .table-container { overflow-x: auto; border-radius: 8px; }
-    .custom-table th { background-color: #0369a1 !important; color: white !important; text-align: center !important; white-space: nowrap; }
-    
-    /* 💡 수정된 부분: 모든 표 안의 글자들이 절대 줄바꿈되지 않도록 강제 설정 */
+    .custom-table th { color: white !important; text-align: center !important; white-space: nowrap; }
+    /* 표 안의 글자는 줄바꿈하지 않습니다. */
     .custom-table td { vertical-align: middle; text-align: center; white-space: nowrap; }
   </style>
+  <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="journey.css">
   <link rel="stylesheet" href="book-helper.css">
   <link rel="stylesheet" href="quiz.css">
 </head>
 <body>
-  <main class="container is-max-desktop">
-    <div class="tabs is-boxed is-centered mb-0 is-toggle">
-      <ul>
-        <li id="tab-form" class="is-active" onclick="openTab(event, 'form-tab')"><a>📝 기록하기</a></li>
-        <li id="tab-leaderboard" onclick="openTab(event, 'leaderboard-tab')"><a>🏆 리더보드</a></li>
-        <li id="tab-dashboard" onclick="openTab(event, 'dashboard-tab')"><a>🏫 대시보드</a></li>
-      </ul>
+  <header class="school-header">
+    <div class="school-header-inner">
+      <div class="school-brand">
+        <svg class="school-crest" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 2 L37 8 V22 C37 32 29 39 20 42 C11 39 3 32 3 22 V8 Z" fill="#1E5FB4" stroke="#E8B931" stroke-width="2.5"/><path d="M11 25 C15 21 25 21 29 25 M20 12 V31 M12 17 H28" stroke="#E8B931" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        <div class="school-name"><small>세인기독학교</small><strong>다독다독 세계여행</strong></div>
+      </div>
+      <nav class="tabs school-tabs" aria-label="화면 이동">
+        <ul>
+          <li id="tab-form" class="is-active" onclick="openTab(event, 'form-tab')"><button type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2"/><path d="M8 7h6"/></svg>기록하기</button></li>
+          <li id="tab-leaderboard" onclick="openTab(event, 'leaderboard-tab')"><button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3a3 3 0 0 1-3 4M7 5H4a3 3 0 0 0 3 4"/></svg>리더보드</button></li>
+          <li id="tab-dashboard" onclick="openTab(event, 'dashboard-tab')"><button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>대시보드</button></li>
+        </ul>
+      </nav>
     </div>
+  </header>
+  <main class="container is-max-desktop school-main">
 
     <section class="year-bar" aria-label="조회 학년도">
       <label for="yearFilter">조회 학년도</label>
@@ -40,7 +48,7 @@
     </section>
     <!-- 탭 1: 기록하기 -->
     <div id="form-tab" class="tab-content is-active-content">
-      <h2 class="title is-4 has-text-centered mb-5" style="color: #0369a1;">🗺️ 다독다독 세계여행 비행 기록</h2>
+      <h2 class="page-title">오늘의 독서 비행 기록</h2>
       <details id="bookHelper" class="book-helper">
         <summary><span class="book-helper-symbol" aria-hidden="true">⌕</span><span><strong>책 검색 도우미</strong><small>책을 찾아 지은이와 전체 쪽수를 확인해요</small></span><span class="book-helper-toggle" aria-hidden="true">＋</span></summary>
         <div class="book-helper-body">
@@ -90,7 +98,7 @@
             </div>
           </div>
         </div>
-        <button type="submit" id="submitBtn" class="button is-link is-fullwidth is-large mt-4" style="background-color: #0284c7;">비행 기록 저장 🛫</button>
+        <button type="submit" id="submitBtn" class="button is-link is-fullwidth is-large mt-4 save-button">비행 기록 저장</button>
       </form>
     </div>
     
@@ -98,11 +106,11 @@
     <div id="leaderboard-tab" class="tab-content">
       <div class="columns is-multiline">
         <div class="column is-6"><div class="box"><h3 class="box-title">🌍 선택 학년도 리더보드 Top 3</h3><div id="allTop3"></div></div></div>
-        <div class="column is-6"><div class="box"><h3 class="box-title">🏫 반별 리더보드</h3><div class="select is-small mb-3"><select id="classFilter" onchange="renderAllTimeLeaderboard()"><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div><div id="classTop3"></div></div></div>
+        <div class="column is-6"><div class="box"><h3 class="box-title">🏫 반별 리더보드</h3><div class="select is-small mb-3"><select id="classFilter" aria-label="반별 리더보드에서 볼 반" onchange="renderAllTimeLeaderboard()"><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div><div id="classTop3"></div></div></div>
       </div>
       
-      <div class="field box mt-4 mb-5" style="background-color: #f0f8ff; border: 1px solid #cce5ff;">
-        <label class="label has-text-info-dark">📅 조회할 월을 선택하세요</label>
+      <div class="field box mt-4 mb-5 month-picker">
+        <label class="label" for="monthFilter">📅 조회할 월을 선택하세요</label>
         <div class="select is-fullwidth is-info"><select id="monthFilter" onchange="renderMonthlyLeaderboard()"></select></div>
       </div>
       <div class="columns is-multiline">
@@ -121,8 +129,8 @@
       <div id="errorBox" class="notification is-danger is-light" style="display:none;"></div>
       
       <header class="journey-header">
-        <div><p class="journey-eyebrow">DADOK EXPLORERS CLUB</p><h2>책 따라, 세계 한 바퀴 <span aria-hidden="true">✈</span></h2><p>한 장 한 장 읽을 때마다, 친구들과 더 넓은 세상으로!</p></div>
-        <div class="journey-emblem" aria-hidden="true"><span>🌏</span><b>우리들의 독서 탐험대</b><small>READ · WALK · DISCOVER</small></div>
+        <div><h2>세계를 품은 탐험대</h2><p>책 한 권을 읽을 때마다 우리 학교 친구들이 함께 세계를 건너요.</p></div>
+        <svg class="journey-crest" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 2 L37 8 V22 C37 32 29 39 20 42 C11 39 3 32 3 22 V8 Z" fill="#1E5FB4" stroke="#E8B931" stroke-width="2.5"/><path d="M11 25 C15 21 25 21 29 25 M20 12 V31 M12 17 H28" stroke="#E8B931" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
       </header>
       <section class="expedition-bar" aria-label="탐험대 선택">
         <div class="expedition-select"><label for="dashClassSelect">누구와 함께 떠날까요?</label><select id="dashClassSelect" onchange="renderClassTable()"><option value="전체">🌍 전교생 전체 보기</option><option value="오세아니아반">오세아니아반</option><option value="아시아반">아시아반</option><option value="아프리카반">아프리카반</option><option value="아메리카반">아메리카반</option><option value="유럽반">유럽반</option><option value="아틀랜틱반">아틀랜틱반</option></select></div>
@@ -161,8 +169,8 @@
     <div class="modal-content" style="max-width: 400px;">
       <div class="box has-text-centered" style="border-radius: 20px; padding: 40px 20px;">
         <p style="font-size: 4rem; margin-bottom: 10px;">🎉</p>
-        <p class="title is-4 mb-4" style="color: #333;">기록완료!</p>
-        <p class="is-size-5 mb-5"><strong id="acquiredSteps" style="color: #3b82f6; font-size: 1.8rem; margin-right: 4px;">0</strong>걸음을 획득하였습니다.</p>
+        <p class="title is-4 mb-4 page-title">기록 완료!</p>
+        <p class="is-size-5 mb-5"><strong id="acquiredSteps" class="success-steps">0</strong>걸음을 획득하였습니다.</p>
         <p id="successDetail" class="success-detail" hidden></p>
         <button class="button is-info is-medium px-6" onclick="closeSuccessModal()" style="border-radius: 8px;">확인</button>
       </div>
@@ -190,6 +198,7 @@
 
   <script src="book-catalog.js"></script>
   <script src="book-helper.js"></script>
+  <script src="class-theme.js"></script>
   <script src="journey-model.js"></script>
   <script src="journey.js"></script>
   <script src="school-model.js"></script>
